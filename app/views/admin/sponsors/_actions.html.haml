@@ -1,0 +1,7 @@
+.btn-group
+  = link_to 'Edit', edit_admin_conference_sponsor_path(@conference.short_title, sponsor),
+  method: :get, class: 'btn btn-primary'
+  = link_to 'Delete', admin_conference_sponsor_path(@conference.short_title, sponsor),
+  method: :delete, class: 'btn btn-danger', data: { confirm: "Do you really want to delete the sponsor #{sponsor.name}?" }
+  = link_to 'Add shipment', add_shipment_admin_conference_sponsor_path(@conference, sponsor),
+  method: :get, class: 'btn btn-primary'

@@ -1,0 +1,34 @@
+- if @conference.sponsors.confirmed.with_shipment.any?
+  .row
+    .col-md-12
+      %table.table.table-hover.datatable#sponsors
+        %thead
+          %th Name
+          %th Amount
+          %th Level
+          %th Swag
+          %th Shipments
+          %th Actions
+        %tbody
+          - @conference.sponsors.confirmed.with_shipment.each do |sponsor|
+            %tr
+              %td= sponsor.name
+              %td= sponsor.amount
+              %td= sponsor.sponsorship_level.title
+              %td
+                - sponsor.swag.each do |swag|
+                  = "#{swag[:type]}: #{swag[:quantity]}"
+                  %br
+              %td
+                %table
+                  - sponsor.shipments.each.with_index do |shipment, index|
+                    %tr
+                      %td
+                        %b= "#{shipment[:swag]}"
+                        .text-muted
+                          = "#{shipment[:carrier]}(#{shipment[:track_no]})"
+                      %td= check_box_tag @conference.short_title, sponsor.id, shipment['delivered'], method: :patch, url: "/admin/conferences/#{@conference.short_title}/sponsors/#{sponsor.id}?sponsor[shipments][#{index}][track_no]=#{shipment[:track_no]} && sponsor[shipments][#{index}][delivered]=", class: 'switch-checkbox', data: { off_color: 'warning', on_text: 'delivered', off_text: 'in_transit' }
+
+                      %td= check_box_tag @conference.short_title, sponsor.id, shipment['available'], method: :patch, url: "/admin/conferences/#{@conference.short_title}/sponsors/#{sponsor.id}?sponsor[shipments][available]=", class: 'switch-checkbox', data: { off_color: 'warning', on_text: 'at_venue', off_text: 'not_available' }
+
+              %td= render partial: 'actions', locals: { sponsor: sponsor }

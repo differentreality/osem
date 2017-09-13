@@ -1,0 +1,12 @@
+%table.table.datatable-minimal
+  %thead
+    %th Type
+    %th Quantity
+    %th Delivered
+    %th Available at venue
+  - @sponsor.swag.each do |swag|
+    %tr
+      %td= swag['type']
+      %td= swag['quantity']
+      %td= swag['delivered']
+      %td= swag['available']

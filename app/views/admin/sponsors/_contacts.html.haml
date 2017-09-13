@@ -1,0 +1,29 @@
+- if @conference.sponsors.unconfirmed.any?
+  .row
+    .col-md-12
+      %table.table.table-hover.datatable#sponsors
+        %thead
+          %th Name
+          %th Description
+          %th Level
+          %th State
+          %th Actions
+        %tbody
+          - @conference.sponsors.unconfirmed.each do |sponsor|
+            %tr
+              %td= sponsor.name
+              %td= truncate(sponsor.description)
+              %td= sponsor.sponsorship_level.title
+              %td
+                .btn-group
+                  %button{ type: 'button', class: 'btn btn-link dropdown-toggle', 'data-toggle' => 'dropdown' }
+                    = sponsor.state.humanize
+                    %span.caret
+                  %ul.dropdown-menu{ role: 'menu' }
+                    = render 'change_state_dropdown', sponsor: sponsor
+              %td
+                .btn-group
+                  = link_to 'Edit', edit_admin_conference_sponsor_path(@conference.short_title, sponsor),
+                  method: :get, class: 'btn btn-primary'
+                  = link_to 'Delete', admin_conference_sponsor_path(@conference.short_title, sponsor),
+                  method: :delete, class: 'btn btn-danger', data: { confirm: "Do you really want to delete the sponsor #{sponsor.name}?" }
