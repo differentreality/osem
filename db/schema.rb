@@ -468,6 +468,16 @@ ActiveRecord::Schema.define(version: 20180822125509) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "picture"
+    t.float    "amount"
+    t.boolean  "paid"
+    t.boolean  "has_swag"
+    t.boolean  "swag_delivered"
+    t.boolean  "swag_available"
+    t.boolean  "has_banner"
+    t.text     "swag"
+    t.text     "shipments"
+    t.date     "invoice_sent_at"
+    t.string   "state",                default: "unconfirmed"
   end
 
   create_table "sponsorship_levels", force: :cascade do |t|
