@@ -4,6 +4,7 @@ class Payment < ApplicationRecord
   has_many :ticket_purchases
   belongs_to :user
   belongs_to :conference
+  has_and_belongs_to_many :invoices
 
   attr_accessor :stripe_customer_email
   attr_accessor :stripe_customer_token

@@ -1,0 +1,51 @@
+%p#notice= notice
+
+%p
+  %b No:
+  = @invoice.no
+%p
+  %b Date:
+  = @invoice.date
+%p
+  %b User:
+  = @invoice.user_id
+%p
+  %b Conference:
+  = @invoice.conference_id
+%p
+  %b Description:
+  = @invoice.description
+%p
+  %b Quantity:
+  = @invoice.quantity
+%p
+  %b Total quantity:
+  = @invoice.total_quantity
+%p
+  %b Item price:
+  = @invoice.item_price
+%p
+  %b Total price:
+  = @invoice.total_price
+%p
+  %b Total amount:
+  = @invoice.total_amount
+%p
+  %b Vat:
+  = @invoice.vat
+%p
+  %b Payable:
+  = @invoice.payable
+%p
+  %b Payable text:
+  = @invoice.payable_text
+%p
+  %b Quantity text:
+  = @invoice.quantity_text
+%p
+  %b Paid:
+  = @invoice.paid
+
+= link_to 'Edit', edit_invoice_path(@invoice)
+\|
+= link_to 'Back', invoices_path

@@ -21,6 +21,9 @@ Osem::Application.routes.draw do
 
   resources :users, except: [:new, :index, :create, :destroy] do
     resources :openids, only: :destroy
+    member do
+      resources :invoices
+    end
   end
 
   namespace :admin do
@@ -124,6 +127,7 @@ Osem::Application.routes.draw do
       resources :campaigns, except: [:show]
       resources :emails, only: [:show, :update, :index]
       resources :physical_tickets, only: [:index]
+      resources :invoices
       resources :roles, except: [:new, :create] do
         member do
           post :toggle_user
@@ -188,7 +192,9 @@ Osem::Application.routes.draw do
     resources :tickets, only: [:index]
     resources :ticket_purchases, only: [:create, :destroy, :index]
     resources :payments, only: [:index, :new, :create]
-    resources :physical_tickets, only: [:index, :show]
+    resources :physical_tickets, only: [:index, :show] do
+      get :request_invoice
+    end
     resource :subscriptions, only: [:create, :destroy]
     resource :schedule, only: [:show] do
       member do

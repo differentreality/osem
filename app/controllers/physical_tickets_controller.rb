@@ -27,4 +27,9 @@ class PhysicalTicketsController < ApplicationController
       end
     end
   end
+
+  def request_invoice
+    RequestInvoiceMailJob.perform_later(@physical_ticket)
+    redirect_to :back
+  end
 end

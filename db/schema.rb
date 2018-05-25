@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180316220446) do
+ActiveRecord::Schema.define(version: 20180525140053) do
 
   create_table "ahoy_events", force: :cascade do |t|
     t.integer  "visit_id"
@@ -18,6 +18,7 @@ ActiveRecord::Schema.define(version: 20180316220446) do
     t.string   "name"
     t.text     "properties"
     t.datetime "time"
+    t.index ["name", "time"], name: "index_ahoy_events_on_name_and_time"
     t.index ["time"], name: "index_ahoy_events_on_time"
     t.index ["user_id"], name: "index_ahoy_events_on_user_id"
     t.index ["visit_id"], name: "index_ahoy_events_on_visit_id"
@@ -148,6 +149,25 @@ ActiveRecord::Schema.define(version: 20180316220446) do
     t.string   "mastodon"
   end
 
+  create_table "coupons", force: :cascade do |t|
+    t.string   "name"
+    t.text     "description"
+    t.integer  "discount_type",   default: 0
+    t.float    "discount_amount", default: 0.0
+    t.integer  "conference_id"
+    t.integer  "ticket_id"
+    t.datetime "created_at",                    null: false
+    t.datetime "updated_at",                    null: false
+    t.index ["conference_id"], name: "index_coupons_on_conference_id"
+    t.index ["ticket_id"], name: "index_coupons_on_ticket_id"
+  end
+
+  create_table "coupons_registrations", force: :cascade do |t|
+    t.integer  "coupon_id"
+    t.integer  "registration_id"
+    t.datetime "applied_at",      default: '2018-04-06 14:24:07'
+  end
+
   create_table "delayed_jobs", force: :cascade do |t|
     t.integer  "priority",   default: 0, null: false
     t.integer  "attempts",   default: 0, null: false
@@ -161,6 +181,13 @@ ActiveRecord::Schema.define(version: 20180316220446) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.index ["priority", "run_at"], name: "delayed_jobs_priority"
+  end
+
+  create_table "dietary_choices", force: :cascade do |t|
+    t.integer  "conference_id"
+    t.string   "title",         null: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "difficulty_levels", force: :cascade do |t|
@@ -279,6 +306,33 @@ ActiveRecord::Schema.define(version: 20180316220446) do
     t.datetime "created_at"
   end
 
+  create_table "events_tickets", force: :cascade do |t|
+    t.integer "ticket_id"
+    t.integer "event_id"
+  end
+
+  create_table "invoices", force: :cascade do |t|
+    t.integer  "no"
+    t.datetime "date"
+    t.integer  "user_id"
+    t.integer  "conference_id"
+    t.text     "description"
+    t.integer  "quantity"
+    t.integer  "total_quantity"
+    t.float    "item_price"
+    t.float    "total_price"
+    t.float    "total_amount"
+    t.float    "vat"
+    t.float    "payable"
+    t.text     "payable_text"
+    t.text     "quantity_text"
+    t.boolean  "paid"
+    t.datetime "created_at",     null: false
+    t.datetime "updated_at",     null: false
+    t.index ["conference_id"], name: "index_invoices_on_conference_id"
+    t.index ["user_id"], name: "index_invoices_on_user_id"
+  end
+
   create_table "lodgings", force: :cascade do |t|
     t.string   "name"
     t.text     "description"
@@ -318,6 +372,17 @@ ActiveRecord::Schema.define(version: 20180316220446) do
     t.integer  "conference_id",                  null: false
     t.datetime "created_at",                     null: false
     t.datetime "updated_at",                     null: false
+  end
+
+  create_table "photos", force: :cascade do |t|
+    t.text     "description"
+    t.string   "picture_file_name"
+    t.string   "picture_content_type"
+    t.integer  "picture_file_size"
+    t.datetime "picture_updated_at"
+    t.integer  "conference_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "physical_tickets", force: :cascade do |t|
@@ -433,6 +498,13 @@ ActiveRecord::Schema.define(version: 20180316220446) do
     t.index ["track_id"], name: "index_schedules_on_track_id"
   end
 
+  create_table "social_events", force: :cascade do |t|
+    t.integer "conference_id"
+    t.string  "title"
+    t.text    "description"
+    t.date    "date"
+  end
+
   create_table "splashpages", force: :cascade do |t|
     t.integer  "conference_id"
     t.boolean  "public"
@@ -464,6 +536,16 @@ ActiveRecord::Schema.define(version: 20180316220446) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "picture"
+    t.float    "amount"
+    t.boolean  "paid"
+    t.boolean  "has_swag"
+    t.boolean  "swag_delivered"
+    t.boolean  "swag_available"
+    t.boolean  "has_banner"
+    t.text     "swag"
+    t.text     "shipments"
+    t.date     "invoice_sent_at"
+    t.string   "state",                default: "unconfirmed"
   end
 
   create_table "sponsorship_levels", force: :cascade do |t|
@@ -479,6 +561,44 @@ ActiveRecord::Schema.define(version: 20180316220446) do
     t.integer  "conference_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "survey_questions", force: :cascade do |t|
+    t.integer "survey_id"
+    t.string  "title"
+    t.integer "kind",             default: 0
+    t.integer "min_choices"
+    t.integer "max_choices"
+    t.text    "possible_answers"
+    t.boolean "mandatory",        default: false
+  end
+
+  create_table "survey_replies", force: :cascade do |t|
+    t.integer  "survey_question_id"
+    t.integer  "user_id"
+    t.text     "text"
+    t.datetime "created_at",         null: false
+    t.datetime "updated_at",         null: false
+  end
+
+  create_table "survey_submissions", force: :cascade do |t|
+    t.integer  "user_id"
+    t.integer  "survey_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "surveys", force: :cascade do |t|
+    t.datetime "start_date"
+    t.datetime "end_date"
+    t.string   "title"
+    t.text     "description"
+    t.string   "surveyable_type"
+    t.integer  "surveyable_id"
+    t.datetime "created_at",                  null: false
+    t.datetime "updated_at",                  null: false
+    t.integer  "target",          default: 0
+    t.index ["surveyable_type", "surveyable_id"], name: "index_surveys_on_surveyable_type_and_surveyable_id"
   end
 
   create_table "targets", force: :cascade do |t|
@@ -575,6 +695,7 @@ ActiveRecord::Schema.define(version: 20180316220446) do
     t.boolean  "is_admin",               default: false
     t.string   "username"
     t.boolean  "is_disabled",            default: false
+    t.string   "address",                default: ""
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -651,7 +772,10 @@ ActiveRecord::Schema.define(version: 20180316220446) do
     t.string   "utm_content"
     t.string   "utm_campaign"
     t.datetime "started_at"
+    t.string   "visit_token"
+    t.string   "visitor_token"
     t.index ["user_id"], name: "index_visits_on_user_id"
+    t.index ["visit_token"], name: "index_visits_on_visit_token", unique: true
   end
 
   create_table "votes", force: :cascade do |t|

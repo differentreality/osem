@@ -1,0 +1,37 @@
+.row
+  .col-md-12
+    .page-header
+      %h1 Invoices for #{@conference.title} (#{@invoices.length})
+.row
+  .col-md-12
+
+    %table.table.table-bordered.table-striped.table-hover.datatable#invoices
+      %thead
+        %tr
+          %th No
+          %th Date
+          %th User
+          %th Tickets
+          %th Payments
+          %th Total amount
+          %th Vat
+          %th Payable
+          %th Paid
+          %th Actions
+      %tbody
+        - @invoices.each do |invoice|
+          %tr
+            %td= invoice.no
+            %td= invoice.date
+            %td= link_to invoice.user.try(:email), admin_user_path(invoice.user)
+            %td= invoice.tickets.pluck(:name)
+            %td= invoice.payments.pluck(:id)
+            %td= invoice.total_amount
+            %td= invoice.vat
+            %td= invoice.payable
+            %td= invoice.paid
+            %td
+              .btn-group
+                = link_to 'Show', invoice
+                = link_to 'Edit', edit_invoice_path(invoice)
+                = link_to 'Destroy', invoice, :method => :delete, :data => { :confirm => 'Are you sure?' }
