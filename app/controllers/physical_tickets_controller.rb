@@ -29,6 +29,7 @@ class PhysicalTicketsController < ApplicationController
   end
 
   def request_invoice
+    Rails.logger.debug "physical_ticket: #{@physical_ticket.id}"
     RequestInvoiceMailJob.perform_later(@physical_ticket)
     redirect_to :back
   end

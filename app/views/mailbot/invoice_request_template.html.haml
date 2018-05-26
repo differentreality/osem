@@ -1,6 +1,12 @@
 Dear organizers,
 %br
 %br
+user
+= link_to @user.try(:name), admin_user_url(@user)
+requested an invoice for ticket #{@physical_ticket.ticket.title} purchased for #{@conference.title}.
+%br
+%br
+= link_to 'Create Invoice', new_admin_conference_invoice_url(@conference.short_title, physical_ticket_id: @physical_ticket)
 %br
 %br
 %i This is an automated email, and you are receiving it because you are part of the #{@conference.title} team.

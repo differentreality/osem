@@ -8,6 +8,7 @@
       .text-muted
         User: #{@physical_ticket.user.try(:name)}
         (#{@physical_ticket.user.email})
+        id: #{@physical_ticket.id}
 
 .row
   .col-md-12
@@ -17,7 +18,7 @@
       .col-md-3.col-md-offset-2
         = f.input :date, as: :string, input_html: { id: 'registration-period-start-datepicker', readonly: 'readonly' }
       .col-md-6
-        = f.input :ticket_purchases, collection: @ticket_purchases_collection, selected: @physical_ticket.ticket_purchase.id
+        = f.input :ticket_purchases, collection: @ticket_purchases_collection, selected: @physical_ticket.ticket_purchase.ticket.id
         = f.input :description, label: "Ticket Name, Quantity, Total Price", input_html: { rows: 2, data: { provide: 'markdown-editable' } }, hint: markdown_hint
         .tickets-description
 

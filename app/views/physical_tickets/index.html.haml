@@ -44,8 +44,8 @@
 
                     - else
                       = link_to 'Request Invoice',
-                      conference_physical_ticket_request_invoice_path(@conference.short_title,
-                                                                       physical_ticket),
+                      request_invoice_conference_physical_ticket_path(@conference.short_title,
+                                                                       physical_ticket.token),
                       class: 'btn btn-warning'
       - else
         %h5 No Tickets found!

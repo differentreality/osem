@@ -193,7 +193,9 @@ Osem::Application.routes.draw do
     resources :ticket_purchases, only: [:create, :destroy, :index]
     resources :payments, only: [:index, :new, :create]
     resources :physical_tickets, only: [:index, :show] do
-      get :request_invoice
+      member do
+        get :request_invoice
+      end
     end
     resource :subscriptions, only: [:create, :destroy]
     resource :schedule, only: [:show] do
