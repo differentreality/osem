@@ -14,19 +14,35 @@
     = semantic_form_for @invoice, url: @url do |f|
       .col-md-3
         = f.input :no
-      .col-md-3.col-md-offset-6
+      .col-md-3.col-md-offset-2
         = f.input :date, as: :string, input_html: { id: 'registration-period-start-datepicker', readonly: 'readonly' }
       .col-md-6
-        = f.input :payments, collection: @physical_ticket.ticket_purchase.user.payments.map{ |p| [p.ticket.name, p.id] }
-        = f.input :description, input_html: { rows: 2, value: 'many lines here', data: { provide: 'markdown-editable' } }, hint: markdown_hint
+        = f.input :ticket_purchases, collection: @ticket_purchases_collection, selected: @physical_ticket.ticket_purchase.id
+        = f.input :description, label: "Ticket Name, Quantity, Total Price", input_html: { rows: 2, data: { provide: 'markdown-editable' } }, hint: markdown_hint
         .tickets-description
 
-      .col-md-6
-      = f.input :total_quantity
-      = f.input :total_amount
-      = f.input :vat
-      = f.input :payable
-      = f.input :payable_text, input_html: { rows: 1 }
-      = f.input :quantity_text, input_html: { rows: 1 }
+      .col-md-4
+        = f.input :total_amount
+        = f.input :vat
+        = f.input :payable
+        = f.input :payable_text, input_html: { rows: 1 }
+        = f.input :quantity_text, input_html: { rows: 1 }
 
       = f.submit 'Save', class: 'btn btn-primary'
+
+:javascript
+  $("#invoice_ticket_purchase_ids").change(function () {
+    // $('#invoice_description').text("Ticket Name \t Quantity \t Total Price");
+    $('#invoice_description').text('')
+    var rows = $('#invoice_ticket_purchase_ids :selected').length;
+
+    $('#invoice_ticket_purchase_ids option').each(function() {
+      if($(this).is(':selected')) {
+        var selected = $(this);
+        var text = "\nTicket " + selected.data('ticket-name') + "\t" + selected.data('quantity') + "\t" + selected.data('total-price');
+
+        $('#invoice_description').attr('rows', rows+1);
+        $('#invoice_description').append(text);
+      }
+    });
+  });

@@ -28,6 +28,7 @@ module Admin
     # GET /invoices/new
     def new
       @invoice = @conference.invoices.new
+      @ticket_purchases_collection = @conference.ticket_purchases.where(user: @physical_ticket.user).group_by(&:ticket).map{ |ticket, purchases| [ticket, quantity: purchases.sum(&:quantity), total_price: purchases.sum(&:amount_paid)] }.map{|ticket, data| [ticket.title, ticket.id, data: { ticket_name: ticket.title, quantity: data[:quantity], total_price: data[:total_price]} ]}
       @url = @invoice.new_record? ? admin_conference_invoices_path(@conference.short_title) : admin_conference_invoice_path(@conference.short_title, @invoice)
     end
 
