@@ -322,10 +322,9 @@ ActiveRecord::Schema.define(version: 20180525140053) do
     t.float    "item_price"
     t.float    "total_price"
     t.float    "total_amount"
+    t.float    "vat_percent"
     t.float    "vat"
     t.float    "payable"
-    t.text     "payable_text"
-    t.text     "quantity_text"
     t.boolean  "paid"
     t.datetime "created_at",     null: false
     t.datetime "updated_at",     null: false

@@ -26,6 +26,10 @@ class TicketPurchase < ApplicationRecord
 
   after_create :set_week
 
+  def invoiced?
+    joins(:payments)
+  end
+
   def self.purchase(conference, user, purchases)
     errors = []
     if count_purchased_registration_tickets(conference, purchases) > 1

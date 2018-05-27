@@ -11,10 +11,9 @@ class CreateInvoices < ActiveRecord::Migration[5.0]
       t.float :item_price
       t.float :total_price
       t.float :total_amount
+      t.float :vat_percent
       t.float :vat
       t.float :payable
-      t.text :payable_text
-      t.text :quantity_text
       t.boolean :paid
 
       t.timestamps

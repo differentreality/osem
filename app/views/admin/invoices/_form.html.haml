@@ -3,12 +3,10 @@
     .page-header
       %h1
         = @invoice.new_record? ? 'New invoice' : 'Edit Invoice'
-        for ticket #{@user_tickets.pluck(:title).to_sentence}
 
       .text-muted
-        -# User: #{@physical_ticket.user.try(:name)}
-        -# (#{@physical_ticket.user.email})
-        -# id: #{@physical_ticket.id}
+        User: #{@user.try(:name)}
+        (#{@user.email})
 
 .row
   .col-md-12
@@ -18,17 +16,16 @@
       .col-md-3.col-md-offset-2
         = f.input :date, as: :string, input_html: { id: 'registration-period-start-datepicker', readonly: 'readonly' }
       .col-md-6
-        = f.input :payments, collection: @user_tickets
-        -# , selected: @physical_ticket.ticket_purchase.ticket.id
+        = f.input :tickets, collection: @user_tickets_collection, selected: @user_tickets.keys.pluck(:id), multiple: true
         = f.input :description, label: "Ticket Name, Quantity, Total Price", input_html: { rows: 2, data: { provide: 'markdown-editable' } }, hint: markdown_hint
         .tickets-description
 
       .col-md-4
         = f.input :total_amount
+        = f.input :vat_percent, label: 'VAT percent (%)'
         = f.input :vat
         = f.input :payable
-        = f.input :payable_text, input_html: { rows: 1 }
-        = f.input :quantity_text, input_html: { rows: 1 }
+        %input{ name: 'payment_id', type: 'hidden', value: @payment.id }
 
       = f.submit 'Save', class: 'btn btn-primary'
 
