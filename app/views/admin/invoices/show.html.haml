@@ -1,65 +1,78 @@
 - invoice = @invoice
-.row
-  .col-xs-8
-    %h5
-
-  .col-xs-4
-    .pull-right
-      %h5
-        = "No "
-        = invoice.no
 
 .row
-  .col-xs-12
-    .pull-right
-      = "Date "
-      = invoice.date.strftime('%d-%m-%Y')
+  .hidden-print
+    .col-md-10.col-md-offset-1
+      = link_to 'PDF',
+      admin_conference_invoice_path(@conference.short_title,
+                                    invoice,
+                                    format: 'pdf'),
+      class: 'btn btn-success'
+
+
+      = link_to 'Edit',
+      edit_admin_conference_invoice_path(@conference.short_title,
+                                    invoice),
+      class: 'btn btn-primary pull-right'
+%br
+%br
 
 .row
-  .col-xs-12
-    %h3.text-center
+  .col-md-5.col-md-offset-1
+    = simple_format(ENV['INVOICE_DETAILS'])
+  .col-md-3.col-md-offset-3
+    .hidden-print
+      = image_tag(@conference.picture.thumb.url)
+    = wicked_pdf_image_tag @conference.picture.thumb.url
+.row
+  .col-xs-12.col-md-12.col-lg-12
+    %h4.text-center
       %b Invoice
+    %br
+    %br
 
-.row
-  .col-xs-4.col-xs-offset-8
-    %table.table-bordered.table-hover.table-condensed#table-laghe
-      %tr
-        %td= invoice.user.try(:name)
+  .col-xs-4.col-md-3.col-md-offset-1
+    %h5
+      .text-muted
+        Invoice No
+      = invoice.no
+  .col-xs-4.col-md-4
+    .text-muted
+      Date
+    = invoice.date.strftime('%d-%m-%Y')
+
+  .col-xs-4.col-md-3.col-md-offset-1
+    = simple_format(invoice.recipient)
 
 %br
-.row
-  .col-xs-12.col-md-10.col-md-offset-1.col-lg-8.col-lg-offset-2
-    %table.table.table-hover.table-condensed.table-invoice#table-production
-      %thead
-        %th.text-center Description
-        %th.text-center{style: 'white-space: nowrap'} Quantity
-        %th.text-right{style: 'nowrap' } Price
-        %th.text-right Total
-      %tbody
-        - invoice.description.each do |item|
+%br
+%br
+%p
+  .row
+    .col-xs-12
+      %table.table.table-hover.table-condensed.table-invoice#table-tickets
+        %thead
+          %th.text-center Description
+          %th.text-center{ style: 'white-space: nowrap' } Quantity
+          %th.text-right{ style: 'nowrap' } Price
+          %th.text-right Total
+        %tbody
+          - invoice.description.each do |item|
+            %tr
+              %td.text-center= item[:description]
+              %td.text-center= item[:quantity]
+              %td.text-right= item[:price]
+              %td.text-right= item[:quantity].to_f * item[:price].to_f
           %tr
-            %td.text-center= item[:description]
-            %td.text-center= item[:quantity]
-            %td.text-right= item[:price]
-            %td.text-right= item[:quantity].to_f * item[:price].to_f
-        -# %tr
-        -#   %td{colspan: 3}
-        -#     %h4.text-center
-        -#       -# = ApplicationController.helpers.simple_format(invoice.description)
-        -#
-        -#   %td.text-right= 4 # ApplicationController.helpers.number_format_production(invoice.ticket_purchases.sum(:quantity))
-        -#   %td.text-right= invoice.total_amount
-        -#   %td.text-right= invoice.total_amount
-        %tr
-          %td.text-right{ colspan: 3 } Subtotal
-          %td.text-right{style: 'white-space: nowrap'}= invoice.total_amount
-        %tr
-          %td.text-right{ colspan: 3 }
-            VAT #{ENV['vat_percentage'].to_f}%
-          %td.text-right{style: 'white-space: nowrap'}= invoice.vat
+            %td.text-right{ colspan: 3 } Subtotal
+            %td.text-right{style: 'white-space: nowrap'}= invoice.total_amount
+          %tr
+            %td.text-right{ colspan: 3 }
+              VAT #{ENV['VAT_PERCENT'].to_f}%
+            %td.text-right{style: 'white-space: nowrap'}= invoice.vat
 
-        %tr
-          %td.text-right{ style: 'white-space: nowrap', colspan: 3 }
-            %b Total
-          %td.text-right{ style: 'white-space: nowrap' }
-            %b= invoice.payable
+          %tr
+            %td.text-right{ style: 'white-space: nowrap', colspan: 3 }
+              %b Total
+            %td.text-right{ style: 'white-space: nowrap' }
+              %b= invoice.payable

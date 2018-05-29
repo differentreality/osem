@@ -21,6 +21,14 @@ module Admin
     def show
       respond_to do |format|
         format.html # show.html.erb
+        format.pdf do
+          html = render_to_string(action: 'show.html.haml', layout: 'invoice_pdf')
+          kit = PDFKit.new(html, margin_top: '0in')
+          filename = "invoice_#{@invoice.no}_#{@invoice.date.strftime('%Y-%m')}_#{@invoice.conference.short_title}.pdf"
+
+          send_data kit.to_pdf, filename: filename, type: 'application/pdf'
+          return
+        end
         format.json { render json: @invoice }
       end
     end
