@@ -1,46 +1,65 @@
-%p#notice= notice
+- invoice = @invoice
+.row
+  .col-xs-8
+    %h5
 
-%p
-  %b No:
-  = @invoice.no
-%p
-  %b Date:
-  = @invoice.date
-%p
-  %b User:
-  = @invoice.user_id
-%p
-  %b Conference:
-  = @invoice.conference_id
-%p
-  %b Description:
-  = @invoice.description
-%p
-  %b Quantity:
-  = @invoice.quantity
-%p
-  %b Total quantity:
-  = @invoice.total_quantity
-%p
-  %b Item price:
-  = @invoice.item_price
-%p
-  %b Total price:
-  = @invoice.total_price
-%p
-  %b Total amount:
-  = @invoice.total_amount
-%p
-  %b Vat:
-  = @invoice.vat
-%p
-  %b Payable:
-  = @invoice.payable
+  .col-xs-4
+    .pull-right
+      %h5
+        = "No "
+        = invoice.no
 
-%p
-  %b Paid:
-  = @invoice.paid
+.row
+  .col-xs-12
+    .pull-right
+      = "Date "
+      = invoice.date.strftime('%d-%m-%Y')
 
-= link_to 'Edit', edit_invoice_path(@invoice)
-\|
-= link_to 'Back', invoices_path
+.row
+  .col-xs-12
+    %h3.text-center
+      %b Invoice
+
+.row
+  .col-xs-4.col-xs-offset-8
+    %table.table-bordered.table-hover.table-condensed#table-laghe
+      %tr
+        %td= invoice.user.try(:name)
+
+%br
+.row
+  .col-xs-12.col-md-10.col-md-offset-1.col-lg-8.col-lg-offset-2
+    %table.table.table-hover.table-condensed.table-invoice#table-production
+      %thead
+        %th.text-center Description
+        %th.text-center{style: 'white-space: nowrap'} Quantity
+        %th.text-right{style: 'nowrap' } Price
+        %th.text-right Total
+      %tbody
+        - invoice.description.each do |item|
+          %tr
+            %td.text-center= item[:description]
+            %td.text-center= item[:quantity]
+            %td.text-right= item[:price]
+            %td.text-right= item[:quantity].to_f * item[:price].to_f
+        -# %tr
+        -#   %td{colspan: 3}
+        -#     %h4.text-center
+        -#       -# = ApplicationController.helpers.simple_format(invoice.description)
+        -#
+        -#   %td.text-right= 4 # ApplicationController.helpers.number_format_production(invoice.ticket_purchases.sum(:quantity))
+        -#   %td.text-right= invoice.total_amount
+        -#   %td.text-right= invoice.total_amount
+        %tr
+          %td.text-right{ colspan: 3 } Subtotal
+          %td.text-right{style: 'white-space: nowrap'}= invoice.total_amount
+        %tr
+          %td.text-right{ colspan: 3 }
+            VAT #{ENV['vat_percentage'].to_f}%
+          %td.text-right{style: 'white-space: nowrap'}= invoice.vat
+
+        %tr
+          %td.text-right{ style: 'white-space: nowrap', colspan: 3 }
+            %b Total
+          %td.text-right{ style: 'white-space: nowrap' }
+            %b= invoice.payable

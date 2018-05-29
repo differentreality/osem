@@ -127,6 +127,7 @@ Osem::Application.routes.draw do
       resources :campaigns, except: [:show]
       resources :emails, only: [:show, :update, :index]
       resources :physical_tickets, only: [:index]
+      get 'invoices/add_item', 'invoices#add_invoice_item'
       resources :invoices
       resources :roles, except: [:new, :create] do
         member do

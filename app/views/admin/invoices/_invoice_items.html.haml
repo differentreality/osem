@@ -1,0 +1,26 @@
+- if item
+
+  - description = item[:description]
+  - quantity = item[:quantity]
+  - price = item[:price]
+
+.row
+  .col-md-5
+    = text_field_tag 'invoice[description][][description]', description, autofocus: true, class: 'form-control'
+
+  .col-md-2
+    = text_field_tag 'invoice[description][][quantity]', quantity, min: 1, class: 'form-control'
+
+  .col-md-2
+    = number_field_tag 'invoice[description][][price]', price, min: 0, class: 'form-control', onchange: 'payable_change()'
+
+  .col-md-3
+    = link_to 'javascript: void(0)', onclick: 'remove_field($(this))', title: 'Remove field' do
+      %i.fa.fa-times.btn.btn-danger
+
+:javascript
+
+  function remove_field($this) {
+    // Get .row
+    $this.parent().parent().remove();
+  }

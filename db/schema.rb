@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180525140053) do
+ActiveRecord::Schema.define(version: 20180529110537) do
 
   create_table "ahoy_events", force: :cascade do |t|
     t.integer  "visit_id"
@@ -317,19 +317,29 @@ ActiveRecord::Schema.define(version: 20180525140053) do
     t.integer  "user_id"
     t.integer  "conference_id"
     t.text     "description"
-    t.integer  "quantity"
+    t.text     "recipient"
     t.integer  "total_quantity"
-    t.float    "item_price"
-    t.float    "total_price"
     t.float    "total_amount"
     t.float    "vat_percent"
     t.float    "vat"
     t.float    "payable"
     t.boolean  "paid"
+    t.integer  "kind"
     t.datetime "created_at",     null: false
     t.datetime "updated_at",     null: false
     t.index ["conference_id"], name: "index_invoices_on_conference_id"
     t.index ["user_id"], name: "index_invoices_on_user_id"
+  end
+
+  create_table "invoices_ticket_purchases", force: :cascade do |t|
+    t.integer  "invoice_id"
+    t.integer  "ticket_purchase_id"
+    t.integer  "total_quantity"
+    t.decimal  "invoice_payable"
+    t.datetime "created_at",         null: false
+    t.datetime "updated_at",         null: false
+    t.index ["invoice_id"], name: "index_invoices_ticket_purchases_on_invoice_id"
+    t.index ["ticket_purchase_id"], name: "index_invoices_ticket_purchases_on_ticket_purchase_id"
   end
 
   create_table "lodgings", force: :cascade do |t|

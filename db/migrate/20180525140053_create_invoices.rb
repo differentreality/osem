@@ -6,15 +6,14 @@ class CreateInvoices < ActiveRecord::Migration[5.0]
       t.references :user, foreign_key: true
       t.references :conference, foreign_key: true
       t.text :description
-      t.integer :quantity
+      t.text :recipient
       t.integer :total_quantity
-      t.float :item_price
-      t.float :total_price
       t.float :total_amount
       t.float :vat_percent
       t.float :vat
       t.float :payable
       t.boolean :paid
+      t.integer :kind
 
       t.timestamps
     end

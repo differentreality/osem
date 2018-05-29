@@ -8,28 +8,74 @@
         User: #{@user.try(:name)}
         (#{@user.email})
 
-.row
-  .col-md-12
-    = semantic_form_for @invoice, url: @url do |f|
-      .col-md-3
-        = f.input :no
-      .col-md-3.col-md-offset-2
-        = f.input :date, as: :string, input_html: { id: 'registration-period-start-datepicker', readonly: 'readonly' }
-      .col-md-6
-        = f.input :tickets, collection: @user_tickets_collection, selected: @user_tickets.keys.pluck(:id), multiple: true
-        = f.input :description, label: "Ticket Name, Quantity, Total Price", input_html: { rows: 2, data: { provide: 'markdown-editable' } }, hint: markdown_hint
-        .tickets-description
-
-      .col-md-4
-        = f.input :total_amount
-        = f.input :vat_percent, label: 'VAT percent (%)'
-        = f.input :vat
-        = f.input :payable
-        %input{ name: 'payment_id', type: 'hidden', value: @payment.id }
-
+= semantic_form_for @invoice, url: @url do |f|
+  .row
+    .col-md-5
+      = ApplicationController.helpers.simple_format(ENV['INVOICE_DETAILS'])
+    .col-md-3
+      = f.input :kind
+    .col-md-1
       = f.submit 'Save', class: 'btn btn-primary'
+  .row
+    .col-md-2
+      = f.input :no
+    .col-md-2.col-md-offset-1
+      = f.input :date, as: :string, input_html: { id: 'registration-period-start-datepicker', readonly: 'readonly' }
+    .col-md-5
+      = f.input :recipient, input_html: { value: ENV['INVOICE_DETAILS'], rows: 2, data: { provide: 'markdown-editable' } }, hint: markdown_hint
+
+  .row
+    .col-md-4
+      = f.input 'tickets', label: 'Tickets', collection: @user_tickets_collection, multiple: true, selected: @user_tickets.map{ |x| x[:ticket].id }
+
+  .row
+    .col-md-8
+      #description
+        %table.table
+          %tr
+            %th.col-md-5 Description
+            %th Quantity
+            %th Total Price
+            %th.col-md-3
+
+        - if @invoice.description.present?
+          - @invoice.description.each do |item|
+            = render partial: 'invoice_items', locals: { item: item }
+        - else
+          - @user_tickets.each do |item|
+            - item[:description] = item[:ticket].title
+            = render partial: 'invoice_items', locals: { item: item }
+
+      %br
+      = link_to 'Add item', admin_conference_invoices_add_item_path(@conference), remote: true
+      %br
+      %br
+
+
+      -# = f.input :description, label: "Ticket Name, Quantity, Total Price", input_html: { rows: 2, data: { provide: 'markdown-editable' } }, hint: markdown_hint
+      %hr
+  .row
+    .col-md-2
+      = f.input :total_amount
+    .col-md-2
+      = f.input :vat_percent, label: 'VAT percent (%)'
+    .col-md-2
+      = f.input :vat
+    .col-md-2
+      = f.input :payable
+      - if @payment && (@payment.amount != @invoice.payable)
+        %p The amount is different than the payment amount (#{@payment.amount})!
+      %input{ name: 'payment_id', type: 'hidden', value: @payment.id }
+      -# %input{ name: 'invoice[ticket_purchase_ids]', type: 'hidden', value: @ticket_purchases.pluck(:id) }
+
+      = hidden_field_tag 'invoice[ticket_purchase_ids]', @user_tickets.map{ |x| x[:ticket_purchase_ids] }.flatten, class: 'form-control'
+
+      = @user_tickets.map{ |x| x[:ticket_purchase_ids] }
+      -# = f.input :ticket_purchases, input_html: { type: 'hidden',  value: @ticket_purchases.pluck(:id)}
+
 
 :javascript
+
   $("#invoice_ticket_purchase_ids").change(function () {
     // $('#invoice_description').text("Ticket Name \t Quantity \t Total Price");
     $('#invoice_description').text('')
@@ -45,3 +91,43 @@
       }
     });
   });
+
+  $("#invoice_vat_percent").change(function () {
+    $("#invoice_vat").val(($("#invoice_total_amount").val() * parseFloat($("#invoice_vat_percent").val()) / 100).toFixed(2));
+
+    calculatePayable();
+  });
+
+  $("#invoice_total_amount").change(function () {
+    $("#invoice_vat").val(($("#invoice_total_amount").val() * parseFloat($("#invoice_vat_percent").val()) / 100).toFixed(2));
+    calculatePayable();
+  });
+
+  function calculatePayable() {
+    var payable = (parseFloat($("#invoice_vat").val()) + parseFloat($("#invoice_total_amount").val())).toFixed(2);
+
+    $("#invoice_payable").val(payable);
+  }
+
+  $("#invoice_payable").change(function () {
+    payable_change($(this).val());
+  });
+
+  function payable_change(payable) {
+    if (!payable > 0) {
+      var payable = parseFloat(0);
+
+      $("[id='invoice_description__price']").each( function( index ) {
+        price = parseFloat($(this).val()).toFixed(2);
+        payable = (parseFloat(payable) + parseFloat(price)).toFixed(2);
+      });
+    }
+
+    var vat_percent = parseFloat($("#invoice_vat_percent").val());
+    var total_amount = (payable / (1 + vat_percent/100)).toFixed(2);
+    var vat = (total_amount * vat_percent / 100).toFixed(2);
+
+    $("#invoice_total_amount").val(total_amount);
+    $("#invoice_vat").val(vat);
+    $("#invoice_payable").val(payable);
+  }
