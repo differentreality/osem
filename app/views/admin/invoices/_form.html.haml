@@ -5,15 +5,16 @@
         = @invoice.new_record? ? 'New invoice' : 'Edit Invoice'
 
       .text-muted
-        User: #{@user.try(:name)}
-        (#{@user.email})
+        -# User: #{invoice.user.try(:name)}
+        -# (#{invoice.user.email})
 
 = semantic_form_for @invoice, url: @url do |f|
   .row
     .col-md-5
       = ApplicationController.helpers.simple_format(ENV['INVOICE_DETAILS'])
     .col-md-3
-      = f.input :kind
+      = f.input :kind, selected: @invoice.kind, input_html: { collection: Invoice::kinds }
+
     .col-md-1
       = f.submit 'Save', class: 'btn btn-primary'
   .row
@@ -22,11 +23,12 @@
     .col-md-2.col-md-offset-1
       = f.input :date, as: :string, input_html: { id: 'registration-period-start-datepicker', readonly: 'readonly' }
     .col-md-5
-      = f.input :recipient, input_html: { value: ENV['INVOICE_DETAILS'], rows: 2, data: { provide: 'markdown-editable' } }, hint: markdown_hint
+      = f.input :recipient, input_html: { value: @invoice.recipient || @sponsor.try(:address), rows: 5, data: { provide: 'markdown-editable' } }, hint: markdown_hint
 
   .row
     .col-md-4
-      = f.input 'tickets', label: 'Tickets', collection: @user_tickets_collection, multiple: true, selected: @user_tickets.map{ |x| x[:ticket].id }
+      - if @user_tickets
+        = f.input 'tickets', label: 'Tickets', collection: @user_tickets_collection, multiple: true, selected: @user_tickets.map{ |x| x[:ticket].id }
 
   .row
     .col-md-8
@@ -41,10 +43,12 @@
         - if @invoice.description.present?
           - @invoice.description.each do |item|
             = render partial: 'invoice_items', locals: { item: item }
-        - else
+        - elsif @user_tickets
           - @user_tickets.each do |item|
             - item[:description] = item[:ticket].title
             = render partial: 'invoice_items', locals: { item: item }
+        - else
+          = render partial: 'invoice_items', locals: { item: nil }
 
       %br
       = link_to 'Add item', admin_conference_invoices_add_item_path(@conference), remote: true
@@ -56,7 +60,7 @@
       %hr
   .row
     .col-md-2
-      = f.input :total_amount
+      = f.input :total_amount, value: @invoice.total_amount
     .col-md-2
       = f.input :vat_percent, label: 'VAT percent (%)'
     .col-md-2
@@ -65,14 +69,11 @@
       = f.input :payable
       - if @payment && (@payment.amount != @invoice.payable)
         %p The amount is different than the payment amount (#{@payment.amount})!
-      %input{ name: 'payment_id', type: 'hidden', value: @payment.id }
+      %input{ name: 'payment_id', type: 'hidden', value: @payment.try(:id) }
       -# %input{ name: 'invoice[ticket_purchase_ids]', type: 'hidden', value: @ticket_purchases.pluck(:id) }
 
-      = hidden_field_tag 'invoice[ticket_purchase_ids]', @user_tickets.map{ |x| x[:ticket_purchase_ids] }.flatten, class: 'form-control'
-
-      = @user_tickets.map{ |x| x[:ticket_purchase_ids] }
-      -# = f.input :ticket_purchases, input_html: { type: 'hidden',  value: @ticket_purchases.pluck(:id)}
-
+      - if @user_tickets
+        = hidden_field_tag 'invoice[ticket_purchase_ids]', @user_tickets.map{ |x| x[:ticket_purchase_ids] }.flatten, class: 'form-control'
 
 :javascript
 
@@ -113,21 +114,20 @@
     payable_change($(this).val());
   });
 
-  function payable_change(payable) {
-    if (!payable > 0) {
-      var payable = parseFloat(0);
+  function payable_change(total_amount) {
+    if (!total_amount > 0) {
+      var total_amount = parseFloat(0);
 
       $("[id='invoice_description__price']").each( function( index ) {
         price = parseFloat($(this).val()).toFixed(2);
-        payable = (parseFloat(payable) + parseFloat(price)).toFixed(2);
+        total_amount = (parseFloat(total_amount) + parseFloat(price)).toFixed(2);
       });
     }
 
     var vat_percent = parseFloat($("#invoice_vat_percent").val());
-    var total_amount = (payable / (1 + vat_percent/100)).toFixed(2);
     var vat = (total_amount * vat_percent / 100).toFixed(2);
 
     $("#invoice_total_amount").val(total_amount);
     $("#invoice_vat").val(vat);
-    $("#invoice_payable").val(payable);
+    calculatePayable()
   }

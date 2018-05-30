@@ -21,9 +21,7 @@ Osem::Application.routes.draw do
 
   resources :users, except: [:new, :index, :create, :destroy] do
     resources :openids, only: :destroy
-    member do
-      resources :invoices
-    end
+    resources :invoices, only: [:show, :index]
   end
 
   namespace :admin do

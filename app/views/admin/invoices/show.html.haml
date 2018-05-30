@@ -10,69 +10,12 @@
       class: 'btn btn-success'
 
 
-      = link_to 'Edit',
-      edit_admin_conference_invoice_path(@conference.short_title,
-                                    invoice),
-      class: 'btn btn-primary pull-right'
-%br
-%br
+      - if can? :edit, Invoice
+        = link_to 'Edit',
+        edit_admin_conference_invoice_path(@conference.short_title,
+                                      invoice),
+        class: 'btn btn-primary pull-right'
 
-.row
-  .col-md-5.col-md-offset-1
-    = simple_format(ENV['INVOICE_DETAILS'])
-  .col-md-3.col-md-offset-3
-    .hidden-print
-      = image_tag(@conference.picture.thumb.url)
-    = wicked_pdf_image_tag @conference.picture.thumb.url
-.row
-  .col-xs-12.col-md-12.col-lg-12
-    %h4.text-center
-      %b Invoice
-    %br
-    %br
+      %p{ style: 'height:50px' }
 
-  .col-xs-4.col-md-3.col-md-offset-1
-    %h5
-      .text-muted
-        Invoice No
-      = invoice.no
-  .col-xs-4.col-md-4
-    .text-muted
-      Date
-    = invoice.date.strftime('%d-%m-%Y')
-
-  .col-xs-4.col-md-3.col-md-offset-1
-    = simple_format(invoice.recipient)
-
-%br
-%br
-%br
-%p
-  .row
-    .col-xs-12
-      %table.table.table-hover.table-condensed.table-invoice#table-tickets
-        %thead
-          %th.text-center Description
-          %th.text-center{ style: 'white-space: nowrap' } Quantity
-          %th.text-right{ style: 'nowrap' } Price
-          %th.text-right Total
-        %tbody
-          - invoice.description.each do |item|
-            %tr
-              %td.text-center= item[:description]
-              %td.text-center= item[:quantity]
-              %td.text-right= item[:price]
-              %td.text-right= item[:quantity].to_f * item[:price].to_f
-          %tr
-            %td.text-right{ colspan: 3 } Subtotal
-            %td.text-right{style: 'white-space: nowrap'}= invoice.total_amount
-          %tr
-            %td.text-right{ colspan: 3 }
-              VAT #{ENV['VAT_PERCENT'].to_f}%
-            %td.text-right{style: 'white-space: nowrap'}= invoice.vat
-
-          %tr
-            %td.text-right{ style: 'white-space: nowrap', colspan: 3 }
-              %b Total
-            %td.text-right{ style: 'white-space: nowrap' }
-              %b= invoice.payable
+= render partial: 'invoices/invoice_pdf', locals: { invoice: @invoice }

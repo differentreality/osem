@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180529110537) do
+ActiveRecord::Schema.define(version: 20180530103229) do
 
   create_table "ahoy_events", force: :cascade do |t|
     t.integer  "visit_id"
@@ -555,6 +555,7 @@ ActiveRecord::Schema.define(version: 20180529110537) do
     t.text     "shipments"
     t.date     "invoice_sent_at"
     t.string   "state",                default: "unconfirmed"
+    t.text     "address"
   end
 
   create_table "sponsorship_levels", force: :cascade do |t|
@@ -705,6 +706,7 @@ ActiveRecord::Schema.define(version: 20180529110537) do
     t.string   "username"
     t.boolean  "is_disabled",            default: false
     t.string   "address",                default: ""
+    t.text     "invoice_details",        default: ""
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true

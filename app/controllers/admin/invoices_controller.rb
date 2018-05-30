@@ -4,6 +4,7 @@ module Admin
     load_and_authorize_resource :conference, find_by: :short_title
     load_resource :physical_ticket
     load_resource :payment, except: :create
+    load_resource :sponsor, only: :new
 
     # GET /invoices
     # GET /invoices.json
@@ -35,29 +36,34 @@ module Admin
 
     # GET /invoices/new
     def new
-      @user = @payment.user
-      ticket_purchases = if @payment
-                          #  @payment.ticket_purchases
-                           @conference.ticket_purchases.where(payment: @payment)
-                         else
-                           # CHANGEME - FIND USER
-                           @conference.ticket_purchases.where(user: @payment.user).paid
-                         end
-      @ticket_purchase_ids = ticket_purchases.pluck(:id)
-      @ticket_purchases = ticket_purchases
+      @user = @payment.try(:user)
+      if params[:kind] == 'ticket_purchases'
+        ticket_purchases = if @payment
+                            #  @payment.ticket_purchases
+                             @conference.ticket_purchases.where(payment: @payment)
+                           else
+                             # CHANGEME - FIND USER
+                             @conference.ticket_purchases.where(user: @payment.user).paid
+                           end
+        @ticket_purchase_ids = ticket_purchases.pluck(:id)
+        @ticket_purchases = ticket_purchases
 
-      # [[ticket1, q: 5, price: 50], [ticket2, q: 2, price: 80]]
-      @user_tickets = ticket_purchases.group_by(&:ticket).map{|ticket, purchases| [ticket, purchases.group_by(&:amount_paid).map{|amount, p| [amount, p.pluck(:quantity).sum, p.pluck(:id)] }  ]}.to_h.map{|ticket, p| p.map{|x| { :ticket => ticket, :price => x.first, :quantity => x.second, :ticket_purchase_ids => x.last} } }.flatten
+        # [[ticket1, q: 5, price: 50], [ticket2, q: 2, price: 80]]
+        @user_tickets = ticket_purchases.group_by(&:ticket).map{|ticket, purchases| [ticket, purchases.group_by(&:amount_paid).map{|amount, p| [amount, p.pluck(:quantity).sum, p.pluck(:id)] }  ]}.to_h.map{|ticket, p| p.map{|x| { :ticket => ticket, :price => x.first, :quantity => x.second, :ticket_purchase_ids => x.last} } }.flatten
 
-      # @user_tickets = ticket_purchases.group_by(&:ticket).map{ |ticket, purchases| [ticket, quantity: purchases.sum(&:quantity), total_price: purchases.sum(&:amount_paid)] }.to_h
+        # @user_tickets = ticket_purchases.group_by(&:ticket).map{ |ticket, purchases| [ticket, quantity: purchases.sum(&:quantity), total_price: purchases.sum(&:amount_paid)] }.to_h
 
-      # @user_tickets_collection = @user_tickets.map{|ticket, data| ["#{ticket.title} (#{data[:quantity]})", ticket.id, data: { ticket_name: ticket.title, quantity: data[:quantity], total_price: data[:total_price]} ]}
+        # @user_tickets_collection = @user_tickets.map{|ticket, data| ["#{ticket.title} (#{data[:quantity]})", ticket.id, data: { ticket_name: ticket.title, quantity: data[:quantity], total_price: data[:total_price]} ]}
 
-      @user_tickets_collection = @user_tickets.map.with_index(1){|data, index| ["#{data[:ticket].title} (#{data[:quantity]} * #{data[:price]} #{data[:ticket].price_currency})", index, data[:ticket].id, data: { ticket_name: data[:ticket].title, quantity: data[:quantity], price: data[:price]} ]}
+        @user_tickets_collection = @user_tickets.map.with_index(1){|data, index| ["#{data[:ticket].title} (#{data[:quantity]} * #{data[:price]} #{data[:ticket].price_currency})", index, data[:ticket].id, data: { ticket_name: data[:ticket].title, quantity: data[:quantity], price: data[:price]} ]}
+
+        total_amount= @user_tickets.sum{|p| p[:price] * p[:quantity]}.to_f
+      else #params[:kind] == 'sponsorship'
+        total_amount = 0
+      end
 
 
       vat_percent = ENV['VAT_PERCENT'].to_f
-      total_amount= @user_tickets.sum{|p| p[:price] * p[:quantity]}.to_f
       vat = total_amount * vat_percent / 100
       payable =  '%.2f' % ((total_amount + vat).to_f)
       # description = @user_tickets.map{|ticket, data| { :description => ticket.title, :quantity => data[:quantity], :price => data[:total_price]} }
@@ -73,28 +79,34 @@ module Admin
 
       # .map(&:ticket).map{ |purchase| ["#{purchase.ticket.title} (#{purchase.quantity})", purchase.id] }
       # @ticket_purchases_collection = @conference.ticket_purchases.where(user: @physical_ticket.user).group_by(&:ticket).map{ |ticket, purchases| [ticket, quantity: purchases.sum(&:quantity), total_price: purchases.sum(&:amount_paid)] }.map{|ticket, data| [ticket.title, ticket.id, data: { ticket_name: ticket.title, quantity: data[:quantity], total_price: data[:total_price]} ]}
-      @url = @invoice.new_record? ? admin_conference_invoices_path(@conference.short_title) : admin_conference_invoice_path(@conference.short_title, @invoice)
+      @url = admin_conference_invoices_path(@conference.short_title)
     end
 
     # GET /invoices/1/edit
     def edit
+      @url = admin_conference_invoice_path(@conference.short_title, @invoice)
+      @user_tickets = @invoice.ticket_purchases.group_by(&:ticket).map{|ticket, purchases| [ticket, purchases.group_by(&:amount_paid).map{|amount, p| [amount, p.pluck(:quantity).sum, p.pluck(:id)] }  ]}.to_h.map{|ticket, p| p.map{|x| { :ticket => ticket, :price => x.first, :quantity => x.second, :ticket_purchase_ids => x.last} } }.flatten
+
+      @user_tickets_collection = @user_tickets.map.with_index(1){|data, index| ["#{data[:ticket].title} (#{data[:quantity]} * #{data[:price]} #{data[:ticket].price_currency})", index, data[:ticket].id, data: { ticket_name: data[:ticket].title, quantity: data[:quantity], price: data[:price]} ]}
     end
 
     # POST /invoices
     # POST /invoices.json
     def create
       @invoice = @conference.invoices.new(invoice_params)
-      @payment = Payment.find(params[:payment_id])
-      @user = @payment.user
+      @payment = Payment.find(params[:payment_id]) if params[:payment_id].present?
+      @user = @payment.try(:user)
 
-      ticket_purchase_ids = invoice_params[:ticket_purchase_ids].split.map(&:to_i)
-      ticket_purchases = TicketPurchase.where(id: ticket_purchase_ids)
+      if invoice_params[:ticket_purchase_ids].present?
+        ticket_purchase_ids = invoice_params[:ticket_purchase_ids].split.map(&:to_i)
+        ticket_purchases = TicketPurchase.where(id: ticket_purchase_ids)
 
-      @invoice.ticket_purchase_ids = ticket_purchase_ids
+        @invoice.ticket_purchase_ids = ticket_purchase_ids
 
-      @user_tickets = ticket_purchases.group_by(&:ticket).map{|ticket, purchases| [ticket, purchases.group_by(&:amount_paid).map{|amount, p| [amount, p.pluck(:quantity).sum, p.pluck(:id)] }  ]}.to_h.map{|ticket, p| p.map{|x| { :ticket => ticket, :price => x.first, :quantity => x.second, :ticket_purchase_ids => x.last} } }.flatten
+        @user_tickets = ticket_purchases.group_by(&:ticket).map{|ticket, purchases| [ticket, purchases.group_by(&:amount_paid).map{|amount, p| [amount, p.pluck(:quantity).sum, p.pluck(:id)] }  ]}.to_h.map{|ticket, p| p.map{|x| { :ticket => ticket, :price => x.first, :quantity => x.second, :ticket_purchase_ids => x.last} } }.flatten
 
-      @user_tickets_collection = @user_tickets.map.with_index(1){|data, index| ["#{data[:ticket].title} (#{data[:quantity]} * #{data[:price]} #{data[:ticket].price_currency})", index, data[:ticket].id, data: { ticket_name: data[:ticket].title, quantity: data[:quantity], price: data[:price]} ]}
+        @user_tickets_collection = @user_tickets.map.with_index(1){|data, index| ["#{data[:ticket].title} (#{data[:quantity]} * #{data[:price]} #{data[:ticket].price_currency})", index, data[:ticket].id, data: { ticket_name: data[:ticket].title, quantity: data[:quantity], price: data[:price]} ]}
+      end
 
       respond_to do |format|
         if @invoice.save
@@ -112,9 +124,21 @@ module Admin
     # PATCH/PUT /invoices/1
     # PATCH/PUT /invoices/1.json
     def update
+      # @payment = Payment.find(params[:payment_id])
+
+      ticket_purchase_ids = invoice_params[:ticket_purchase_ids].split.map(&:to_i)
+      ticket_purchases = TicketPurchase.where(id: ticket_purchase_ids)
+
+      @invoice.ticket_purchase_ids = ticket_purchase_ids
+
+      @user_tickets = ticket_purchases.group_by(&:ticket).map{|ticket, purchases| [ticket, purchases.group_by(&:amount_paid).map{|amount, p| [amount, p.pluck(:quantity).sum, p.pluck(:id)] }  ]}.to_h.map{|ticket, p| p.map{|x| { :ticket => ticket, :price => x.first, :quantity => x.second, :ticket_purchase_ids => x.last} } }.flatten
+
+      @user_tickets_collection = @user_tickets.map.with_index(1){|data, index| ["#{data[:ticket].title} (#{data[:quantity]} * #{data[:price]} #{data[:ticket].price_currency})", index, data[:ticket].id, data: { ticket_name: data[:ticket].title, quantity: data[:quantity], price: data[:price]} ]}
+
+
       respond_to do |format|
         if @invoice.update(invoice_params)
-          format.html { redirect_to @invoice, notice: 'Invoice was successfully updated.' }
+          format.html { redirect_to admin_conference_invoice_path(@conference.short_title, @invoice), notice: 'Invoice was successfully updated.' }
           format.json { head :no_content }
         else
           format.html { render action: 'edit' }
@@ -144,7 +168,7 @@ module Admin
       # Never trust parameters from the scary internet, only allow the white list through.
       def invoice_params
         params.require(:invoice).permit(:no, :date, :user_id, :conference_id,
-                                        :recipient,                                         :quantity, :total_quantity,
+                                        :recipient, :quantity, :total_quantity,
                                         :item_price, :total_price,
                                         :total_amount, :vat_percent, :vat,
                                         :payable, :paid, :kind, :ticket_purchase_ids,

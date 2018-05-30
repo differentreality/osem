@@ -3,36 +3,43 @@
     .col-md-12
       .page-header
         %h1 Your Invoices (#{@invoices.length})
+
   .row
     .col-md-12
 
       %table.table.table-bordered.table-striped.table-hover.datatable#invoices
         %thead
           %tr
+            %th Conference
             %th No
             %th Date
-            %th User
             %th Tickets
-            %th Payments
             %th Total amount
             %th Vat
             %th Payable
             %th Paid
             %th Actions
         %tbody
-          - @invoices.group_by(&:conference).each do |invoice|
+          - @invoices.each do |invoice|
             %tr
+              %td
+                - if invoice.conference
+                  - if can? :show, invoice.conference
+                    = link_to invoice.conference.title, conference_path(invoice.conference.short_title)
+                  - else
+                    invoice.conference.title
               %td= invoice.no
-              %td= invoice.date
-              %td= link_to invoice.user.try(:email), admin_user_path(invoice.user)
-              %td= invoice.tickets.pluck(:name)
-              %td= invoice.payments.pluck(:id)
+              %td= invoice.date.strftime('%Y-%m-%d')
+              %td= invoice.ticket_purchases.map(&:ticket).pluck(:title).to_sentence
               %td= invoice.total_amount
               %td= invoice.vat
               %td= invoice.payable
-              %td= invoice.paid
+              %td
+                - if invoice.paid
+                  .fa.fa-check.text-success
+                - else
+                  .fa.fa-times.text-danger
               %td
                 .btn-group
-                  = link_to 'Show', invoice
-                  = link_to 'Edit', edit_invoice_path(invoice)
-                  = link_to 'Destroy', invoice, :method => :delete, :data => { :confirm => 'Are you sure?' }
+                  = link_to 'Show', user_invoice_path(current_user, invoice), class: 'btn btn-success'
+                  = link_to 'Download PDF', user_invoice_path(current_user, invoice, format: 'pdf'), class: 'btn btn-success'
