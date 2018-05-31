@@ -31,6 +31,7 @@ class AdminAbility
     end
 
     can [:index, :admins], Organization
+    can :footer, 'Pdf'
     can :index, Ticket
     can :manage, TicketPurchase, user_id: user.id
     can [:new, :create], Payment, user_id: user.id

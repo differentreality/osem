@@ -1,21 +1,22 @@
+%style
+  = Rails.application.assets.find_asset('osem-invoice.scss').to_s
 - invoice = @invoice
 
 .row
   .hidden-print
     .col-md-10.col-md-offset-1
-      = link_to 'PDF',
-      admin_conference_invoice_path(@conference.short_title,
-                                    invoice,
-                                    format: 'pdf'),
-      class: 'btn btn-success'
+      .page-header
+        = link_to 'PDF',
+        admin_conference_invoice_path(@conference.short_title,
+                                      invoice,
+                                      format: 'pdf'),
+        class: 'btn btn-success'
 
 
-      - if can? :edit, Invoice
-        = link_to 'Edit',
-        edit_admin_conference_invoice_path(@conference.short_title,
-                                      invoice),
-        class: 'btn btn-primary pull-right'
-
-      %p{ style: 'height:50px' }
+        - if can? :edit, Invoice
+          = link_to 'Edit',
+          edit_admin_conference_invoice_path(@conference.short_title,
+                                        invoice),
+          class: 'btn btn-primary pull-right'
 
 = render partial: 'invoices/invoice_pdf', locals: { invoice: @invoice }

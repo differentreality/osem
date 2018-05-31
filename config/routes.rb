@@ -19,6 +19,8 @@ Osem::Application.routes.draw do
     mount LetterOpenerWeb::Engine, at: "/letter_opener"
   end
 
+  get 'pdfs/footer' => 'pdfs#footer'
+
   resources :users, except: [:new, :index, :create, :destroy] do
     resources :openids, only: :destroy
     resources :invoices, only: [:show, :index]

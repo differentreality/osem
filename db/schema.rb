@@ -707,6 +707,7 @@ ActiveRecord::Schema.define(version: 20180530103229) do
     t.boolean  "is_disabled",            default: false
     t.string   "address",                default: ""
     t.text     "invoice_details",        default: ""
+    t.string   "invoice_vat",            default: ""
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true

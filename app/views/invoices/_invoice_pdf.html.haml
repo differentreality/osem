@@ -1,59 +1,73 @@
-
-.row
-  .col-xs-5.col-xs-offset-1
-    = markdown(ENV['INVOICE_DETAILS'])
-  .col-xs-3.col-xs-offset-3
-    .hidden-print
-      = image_tag(invoice.conference.picture.thumb.url)
-    = wicked_pdf_image_tag invoice.conference.picture.thumb.url
-
-  %p{ style: 'height:100px' }
+= render partial: 'invoices/invoice_header'
 .row
   .col-xs-12.col-md-12.col-lg-12
     %h1.text-center
-      %b Invoice
+      %b INVOICE
 
-    %p{ style: 'height:100px' }
 .row
-  .col-xs-3.col-xs-offset-1
-    %h5
-      .text-muted
-        Invoice No
-      = invoice.no
-  .col-xs-4
-    .text-muted
-      Date
-    = invoice.date.strftime('%d-%m-%Y')
+  .col-xs-12.col-md-12
+    %table.table.table-bordered
+      %tr
+        %td
+          .col-xs-8
+            %dl.invoice
+              %dt{ style: 'text-align: left'} Invoice number
+              %dd
+                = ':'
+                = invoice.no
+            %dl.invoice
+              %dt{ style: 'text-align: left'}
+                Date
+              %dd
+                = ':'
+                = invoice.date.strftime('%Y-%m-%d')
+          .col-xs-4
+            = markdown(invoice.recipient)
 
-  .col-xs-4
-    = markdown(invoice.recipient)
-  %p{ style: 'height:100px' }
+.row
+  .col-xs-12.col-md-12
+    %table.table.invoice-table
+      %thead
+        %th Pos
+        %th Description
+        %th Qty
+        %th.text-right Price
+        %th.text-right Amount
+      %tbody
+        - invoice.description.each.with_index do |item, index|
+          %tr
+            %td= index
+            %td= item[:description]
+            %td
+              = item[:quantity]
+              -# currency
+            %td.text-right= number_with_precision(item[:price], precision: 2)
+            %td.text-right= number_with_precision(item[:quantity].to_f * item[:price].to_f, precision: 2)
+        %tr
+          %td
+          %td{ colspan: 3 }
+            %b Net total
+          %td.text-right{ style: 'white-space: nowrap' }
+            %b= number_with_precision(invoice.total_amount, precision: 2)
+        %tr
+          %td
+          %td.text-left
+            %b VAT
+          %td
+            %b #{ENV['VAT_PERCENT'].to_f}%
+          -# currency
+          %td.text-right
+            %b= number_with_precision(invoice.total_amount, precision: 2)
+          %td.text-right{ style: 'white-space: nowrap' }
+            %b= number_with_precision(invoice.vat, precision: 2)
 
-  .row
-    .col-xs-10.col-xs-offset-1
-      %table.table.table-hover.table-condensed.table-invoice#table-tickets
-        %thead
-          %th.text-center Description
-          %th.text-center{ style: 'white-space: nowrap' } Quantity
-          %th.text-right{ style: 'nowrap' } Price
-          %th.text-right Total
-        %tbody
-          - invoice.description.each do |item|
-            %tr
-              %td.text-center= item[:description]
-              %td.text-center= item[:quantity]
-              %td.text-right= item[:price]
-              %td.text-right= item[:quantity].to_f * item[:price].to_f
-          %tr
-            %td.text-right{ colspan: 3 } Subtotal
-            %td.text-right{style: 'white-space: nowrap'}= invoice.total_amount
-          %tr
-            %td.text-right{ colspan: 3 }
-              VAT #{ENV['VAT_PERCENT'].to_f}%
-            %td.text-right{style: 'white-space: nowrap'}= invoice.vat
+        %tr
+          %td
+          %td{ style: 'white-space: nowrap', colspan: 3 }
+            %b Total due
+          %td.text-right{ style: 'white-space: nowrap' }
+            %b= number_with_precision(invoice.payable, precision: 2)
 
-          %tr
-            %td.text-right{ style: 'white-space: nowrap', colspan: 3 }
-              %b Total
-            %td.text-right{ style: 'white-space: nowrap' }
-              %b= invoice.payable
+    %br
+    %p
+      Stichting EuroBSDCon Foundation is not VAT registered

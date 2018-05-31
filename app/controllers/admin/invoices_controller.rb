@@ -21,10 +21,10 @@ module Admin
     # GET /invoices/1.json
     def show
       respond_to do |format|
-        format.html # show.html.erb
+        format.html
         format.pdf do
           html = render_to_string(action: 'show.html.haml', layout: 'invoice_pdf')
-          kit = PDFKit.new(html, margin_top: '0in')
+          kit = PDFKit.new(html, footer_html: pdfs_footer_url)
           filename = "invoice_#{@invoice.no}_#{@invoice.date.strftime('%Y-%m')}_#{@invoice.conference.short_title}.pdf"
 
           send_data kit.to_pdf, filename: filename, type: 'application/pdf'

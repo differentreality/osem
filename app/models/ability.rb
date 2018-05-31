@@ -78,6 +78,7 @@ class Ability
     end
 
     can :index, Organization
+    can :footer, 'Pdf'
     can :index, Ticket
     can :manage, TicketPurchase, user_id: user.id
     can [:new, :create], Payment, user_id: user.id
@@ -120,6 +121,7 @@ class Ability
   # Abilities for users with roles wandering around in non-admin views.
   def common_abilities_for_admins(user)
     can :access, Admin
+    can :footer, 'Pdf'
     can :manage, :all if user.is_admin?
 
     conf_ids_for_organizer = Conference.with_role(:organizer, user).pluck(:id)

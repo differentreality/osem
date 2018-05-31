@@ -5,10 +5,11 @@
   .row
     .hidden-print
       .col-md-10.col-md-offset-1
-        = link_to 'PDF',
-        user_invoice_path(current_user, invoice,
-                          format: 'pdf'),
-        class: 'btn btn-success'
+        .page-header
+          = link_to 'PDF',
+          user_invoice_path(current_user, invoice,
+                            format: 'pdf'),
+          class: 'btn btn-success'
 
       %p{ style: 'height: 50px' }
 
