@@ -1,55 +1,60 @@
 .row
   .col-md-12
     .page-header
-      %h1 Invoices for #{@conference.title} (#{@invoices.length})
-.row
-  .col-md-12
-    %table.table.table-bordered.table-striped.table-hover#invoices-overview
-      %thead
-        %tr
-          %th Amount invoiced
-          %th VAT amount
-          %th Payable Amount
-      %tbody
-        %tr
-          %td= @conference.invoices.sum(:total_amount)
-          %td= @conference.invoices.sum(:vat)
-          %td= @conference.invoices.sum(:payable)
-.row
-  .col-md-12
+      %h1
+        Invoices for #{@conference.title} (#{@invoices.length})
 
-    %table.table.table-bordered.table-striped.table-hover.datatable#invoices
-      %thead
-        %tr
-          %th No
-          %th Date
-          %th User
-          %th Tickets
-          %th Total amount
-          %th Vat
-          %th Payable
-          %th Paid
-          %th Actions
-      %tbody
-        - @invoices.each do |invoice|
+    - if @invoices.any?
+      %table.table.table-bordered.table-striped.table-hover#invoices-overview
+        %thead
           %tr
-            %td= invoice.no
-            %td= invoice.date
-            %td
-              - if invoice.user
-                = link_to invoice.user.email, admin_user_path(invoice.user)
-            %td
-              - if invoice.ticket_purchases
-                - invoice.ticket_purchases.each do |ticket_purchase|
-                  = ticket_purchase.ticket.title
-                  %br
+            %th Amount invoiced
+            %th VAT amount
+            %th Payable Amount
+        %tbody
+          %tr
+            %td= @conference.invoices.sum(:total_amount)
+            %td= @conference.invoices.sum(:vat)
+            %td= @conference.invoices.sum(:payable)
+    - else
+      %i
+        .text-center
+          There are no invoices yet
+.row
+  .col-md-12
+    - if @invoices.any?
+      %table.table.table-bordered.table-striped.table-hover.datatable#invoices
+        %thead
+          %tr
+            %th No
+            %th Date
+            %th User
+            %th Tickets
+            %th Total amount
+            %th Vat
+            %th Payable
+            %th Paid
+            %th Actions
+        %tbody
+          - @invoices.each do |invoice|
+            %tr
+              %td= invoice.no
+              %td= invoice.date
+              %td
+                - if invoice.user
+                  = link_to invoice.user.email, admin_user_path(invoice.user)
+              %td
+                - if invoice.ticket_purchases
+                  - invoice.ticket_purchases.each do |ticket_purchase|
+                    = ticket_purchase.ticket.title
+                    %br
 
-            %td= invoice.total_amount
-            %td= invoice.vat
-            %td= invoice.payable
-            %td= invoice.paid
-            %td
-              .btn-group
-                = link_to 'Show', admin_conference_invoice_path(@conference.short_title, invoice), class: 'btn btn-success'
-                = link_to 'Edit', edit_admin_conference_invoice_path(@conference.short_title, invoice), class: 'btn btn-primary'
-                = link_to 'Destroy', admin_conference_invoice_path(@conference.short_title, invoice), method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-danger'
+              %td= invoice.total_amount
+              %td= invoice.vat
+              %td= invoice.payable
+              %td= invoice.paid
+              %td
+                .btn-group
+                  = link_to 'Show', admin_conference_invoice_path(@conference.short_title, invoice), class: 'btn btn-success'
+                  = link_to 'Edit', edit_admin_conference_invoice_path(@conference.short_title, invoice), class: 'btn btn-primary'
+                  = link_to 'Destroy', admin_conference_invoice_path(@conference.short_title, invoice), method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-danger'

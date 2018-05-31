@@ -24,7 +24,7 @@ module Admin
         format.html
         format.pdf do
           html = render_to_string(action: 'show.html.haml', layout: 'invoice_pdf')
-          kit = PDFKit.new(html, footer_html: pdfs_footer_url)
+          kit = PDFKit.new(html, footer_html: invoice_footer_url)
           filename = "invoice_#{@invoice.no}_#{@invoice.date.strftime('%Y-%m')}_#{@invoice.conference.short_title}.pdf"
 
           send_data kit.to_pdf, filename: filename, type: 'application/pdf'
@@ -58,8 +58,17 @@ module Admin
         @user_tickets_collection = @user_tickets.map.with_index(1){|data, index| ["#{data[:ticket].title} (#{data[:quantity]} * #{data[:price]} #{data[:ticket].price_currency})", index, data[:ticket].id, data: { ticket_name: data[:ticket].title, quantity: data[:quantity], price: data[:price]} ]}
 
         total_amount= @user_tickets.sum{|p| p[:price] * p[:quantity]}.to_f
-      else #params[:kind] == 'sponsorship'
+      elsif params[:kind] == 'sponsorship'
+        # recipient = Sponsor.find(params[:recipient_id])
+        description = [{ description: "Sponsorship #{@conference.title}", quantity: 1 }]
         total_amount = 0
+      end
+
+      if params[:recipient_type]
+        recipient = params[:recipient_type].camelize.constantize.find(params[:recipient_id])
+
+        recipient_details = recipient.invoice_details
+        recipient_vat = recipient.invoice_vat
       end
 
 
@@ -68,14 +77,19 @@ module Admin
       payable =  '%.2f' % ((total_amount + vat).to_f)
       # description = @user_tickets.map{|ticket, data| { :description => ticket.title, :quantity => data[:quantity], :price => data[:total_price]} }
 
-      no = Invoice.order(created_at: :asc).last.no + 1
+      no = (Invoice.order(created_at: :asc).last.try(:no) || 0) + 1
 
       @invoice = @conference.invoices.new(no: no, date: Date.current,
                                           total_amount: total_amount,
                                           vat_percent: vat_percent,
                                           vat: vat,
-                                          payable: payable)
+                                          payable: payable,
+                                          description: description,
+                                          recipient: recipient,
+                                          recipient_details: recipient_details,
+                                          recipient_vat: recipient_vat)
 
+      puts "recipient: #{@invoice.recipient}"
 
       # .map(&:ticket).map{ |purchase| ["#{purchase.ticket.title} (#{purchase.quantity})", purchase.id] }
       # @ticket_purchases_collection = @conference.ticket_purchases.where(user: @physical_ticket.user).group_by(&:ticket).map{ |ticket, purchases| [ticket, quantity: purchases.sum(&:quantity), total_price: purchases.sum(&:amount_paid)] }.map{|ticket, data| [ticket.title, ticket.id, data: { ticket_name: ticket.title, quantity: data[:quantity], total_price: data[:total_price]} ]}
@@ -167,8 +181,10 @@ module Admin
 
       # Never trust parameters from the scary internet, only allow the white list through.
       def invoice_params
-        params.require(:invoice).permit(:no, :date, :user_id, :conference_id,
-                                        :recipient, :quantity, :total_quantity,
+        params.require(:invoice).permit(:no, :date, :conference_id, :currency,
+                                        :recipient_details, :recipient_vat,
+                                        :recipient_id, :recipient_type,
+                                        :quantity, :total_quantity,
                                         :item_price, :total_price,
                                         :total_amount, :vat_percent, :vat,
                                         :payable, :paid, :kind, :ticket_purchase_ids,

@@ -3,8 +3,8 @@
 - invoice = @invoice
 
 .row
-  .hidden-print
-    .col-md-10.col-md-offset-1
+  .col-md-10.col-md-offset-1
+    .hidden-print
       .page-header
         = link_to 'PDF',
         admin_conference_invoice_path(@conference.short_title,
@@ -19,4 +19,4 @@
                                         invoice),
           class: 'btn btn-primary pull-right'
 
-= render partial: 'invoices/invoice_pdf', locals: { invoice: @invoice }
+    = render partial: 'invoices/invoice_pdf', locals: { invoice: @invoice }

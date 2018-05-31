@@ -1,7 +1,7 @@
 class Invoice < ApplicationRecord
   # has_paper_trail
 
-  belongs_to :user
+  belongs_to :recipient, polymorphic: true
   belongs_to :conference
   serialize :description, Array
 

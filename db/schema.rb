@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180530103229) do
+ActiveRecord::Schema.define(version: 20180531204402) do
 
   create_table "ahoy_events", force: :cascade do |t|
     t.integer  "visit_id"
@@ -313,22 +313,24 @@ ActiveRecord::Schema.define(version: 20180530103229) do
 
   create_table "invoices", force: :cascade do |t|
     t.integer  "no"
-    t.datetime "date"
-    t.integer  "user_id"
+    t.date     "date"
+    t.string   "recipient_type"
+    t.integer  "recipient_id"
     t.integer  "conference_id"
     t.text     "description"
-    t.text     "recipient"
-    t.integer  "total_quantity"
+    t.text     "recipient_details"
+    t.string   "recipient_vat"
     t.float    "total_amount"
     t.float    "vat_percent"
     t.float    "vat"
     t.float    "payable"
+    t.string   "currency"
     t.boolean  "paid"
     t.integer  "kind"
-    t.datetime "created_at",     null: false
-    t.datetime "updated_at",     null: false
+    t.datetime "created_at",        null: false
+    t.datetime "updated_at",        null: false
     t.index ["conference_id"], name: "index_invoices_on_conference_id"
-    t.index ["user_id"], name: "index_invoices_on_user_id"
+    t.index ["recipient_type", "recipient_id"], name: "index_invoices_on_recipient_type_and_recipient_id"
   end
 
   create_table "invoices_ticket_purchases", force: :cascade do |t|
@@ -556,6 +558,10 @@ ActiveRecord::Schema.define(version: 20180530103229) do
     t.date     "invoice_sent_at"
     t.string   "state",                default: "unconfirmed"
     t.text     "address"
+    t.text     "invoice_address"
+    t.text     "invoice_details"
+    t.string   "invoice_vat"
+    t.string   "email"
   end
 
   create_table "sponsorship_levels", force: :cascade do |t|

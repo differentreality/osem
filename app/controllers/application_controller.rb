@@ -8,6 +8,7 @@ class ApplicationController < ActionController::Base
   before_action :store_location
   # Ensure every controller authorizes resource or skips authorization (skip_authorization_check)
   check_authorization unless: :devise_controller?
+  skip_authorization_check only: [:invoice_footer, :invoice_info]
 
   def store_location
     # store last url - this is needed for post-login redirect to whatever the user last visited.
@@ -59,6 +60,21 @@ class ApplicationController < ActionController::Base
     sign_out(current_user)
     mail = User.admin.first ? User.admin.first.email : 'the admin!'
     redirect_to User.ichain_logout_url, error:  "This User is disabled. Please contact #{mail}!"
+  end
+
+  def invoice_footer
+    render 'shared/invoice_footer', layout: false
+  end
+
+  def invoice_info
+    model = params[:model]
+    id = params[:id]
+
+    recipient = model.camelize.constantize.find_by(id: id.to_i)
+    @vat = recipient.invoice_vat
+    @details = recipient.invoice_details
+
+    render 'shared/invoice_info'
   end
 
   def not_found

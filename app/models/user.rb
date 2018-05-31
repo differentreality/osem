@@ -63,7 +63,7 @@ class User < ApplicationRecord
   has_many :events_registrations, through: :registrations
   has_many :ticket_purchases, dependent: :destroy
   has_many :payments, dependent: :destroy
-  has_many :invoices
+  has_many :invoices, as: :recipient
   has_many :tickets, through: :ticket_purchases, source: :ticket do
     def for_registration conference
       where(conference: conference, registration_ticket: true).first
