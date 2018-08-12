@@ -1,0 +1,18 @@
+%p#notice= notice
+
+%p
+  %b Carrier:
+  = @sponsor_shipment.carrier
+%p
+  %b Track no:
+  = @sponsor_shipment.track_no
+%p
+  %b Delivered:
+  = @sponsor_shipment.delivered
+%p
+  %b Available:
+  = @sponsor_shipment.available
+
+= link_to 'Edit', edit_sponsor_shipment_path(@sponsor_shipment)
+\|
+= link_to 'Back', sponsor_shipments_path

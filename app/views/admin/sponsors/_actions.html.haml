@@ -3,5 +3,5 @@
   method: :get, class: 'btn btn-primary'
   = link_to 'Delete', admin_conference_sponsor_path(@conference.short_title, sponsor),
   method: :delete, class: 'btn btn-danger', data: { confirm: "Do you really want to delete the sponsor #{sponsor.name}?" }
-  = link_to 'Add shipment', add_shipment_admin_conference_sponsor_path(@conference, sponsor),
+  = link_to 'Add shipment', new_admin_conference_sponsor_sponsor_swag_path(@conference, sponsor),
   method: :get, class: 'btn btn-primary'

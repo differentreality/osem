@@ -458,6 +458,34 @@ ActiveRecord::Schema.define(version: 20180822125509) do
     t.boolean  "include_booths"
   end
 
+  create_table "sponsor_shipments", force: :cascade do |t|
+    t.integer  "sponsor_id"
+    t.string   "carrier"
+    t.string   "track_no"
+    t.integer  "boxes"
+    t.datetime "dispatched_at"
+    t.boolean  "delivered"
+    t.boolean  "available"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
+    t.index ["sponsor_id"], name: "index_sponsor_shipments_on_sponsor_id"
+  end
+
+  create_table "sponsor_shipments_swags", id: false, force: :cascade do |t|
+    t.integer "sponsor_shipment_id", null: false
+    t.integer "sponsor_swag_id",     null: false
+  end
+
+  create_table "sponsor_swags", force: :cascade do |t|
+    t.integer  "sponsor_id"
+    t.string   "name"
+    t.integer  "quantity"
+    t.text     "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["sponsor_id"], name: "index_sponsor_swags_on_sponsor_id"
+  end
+
   create_table "sponsors", force: :cascade do |t|
     t.string   "name"
     t.text     "description"
@@ -471,13 +499,10 @@ ActiveRecord::Schema.define(version: 20180822125509) do
     t.float    "amount"
     t.boolean  "paid"
     t.boolean  "has_swag"
-    t.boolean  "swag_delivered"
-    t.boolean  "swag_available"
     t.boolean  "has_banner"
-    t.text     "swag"
-    t.text     "shipments"
     t.date     "invoice_sent_at"
     t.string   "state",                default: "unconfirmed"
+    t.text     "notes"
   end
 
   create_table "sponsorship_levels", force: :cascade do |t|

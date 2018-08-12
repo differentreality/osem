@@ -1,0 +1,25 @@
+%h1 Listing sponsor_shipments
+
+%table
+  %tr
+    %th Carrier
+    %th Track no
+    %th Delivered
+    %th Available
+    %th
+    %th
+    %th
+
+  - @sponsor_shipments.each do |sponsor_shipment|
+    %tr
+      %td= sponsor_shipment.carrier
+      %td= sponsor_shipment.track_no
+      %td= sponsor_shipment.delivered
+      %td= sponsor_shipment.available
+      %td= link_to 'Show', sponsor_shipment
+      %td= link_to 'Edit', edit_sponsor_shipment_path(sponsor_shipment)
+      %td= link_to 'Destroy', sponsor_shipment, :method => :delete, :data => { :confirm => 'Are you sure?' }
+
+%br
+
+= link_to 'New Sponsor shipment', new_sponsor_shipment_path

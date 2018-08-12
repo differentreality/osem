@@ -1,0 +1,13 @@
+.row
+  .col-md-12
+    .page-header
+      - if @sponsor_swag.new_record?
+        %h1 Add new swag for sponsor #{@sponsor.name}
+.row
+  .col-md-8
+    = semantic_form_for @sponsor_swag, url: @url do |f|
+      = f.input :name, input_html: { autofocus: true, required: 'required' }
+      = f.input :quantity, input_html: { required: 'required' }
+      = f.input :notes, input_html: { rows: 3 }
+
+      = f.submit 'Save', class: 'btn btn-primary'

@@ -125,13 +125,11 @@ Osem::Application.routes.draw do
       resources :tickets
       resources :sponsors do
         member do
-          get :remove_field
-          get :add_swag_fields
-          get :add_shipment_fields
-          get :add_shipment
           patch :confirm
           patch :cancel
         end
+        resources :sponsor_swags
+        resources :sponsor_shipments
       end
       resources :lodgings, except: [:show]
       resources :targets, except: [:show]

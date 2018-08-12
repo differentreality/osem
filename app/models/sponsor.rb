@@ -5,9 +5,12 @@ class Sponsor < ApplicationRecord
   belongs_to :sponsorship_level
   belongs_to :conference
 
-  serialize :swag, Array
-  serialize :shipments, Array
-  # serialize :swag, HashWithIndifferentAccess
+  has_many :sponsor_swags
+  has_many :sponsor_shipments
+
+  # serialize :swag, Array
+  # serialize :shipments, Array
+  # # serialize :swag, HashWithIndifferentAccess
 
   has_paper_trail ignore: [:updated_at], meta: { conference_id: :conference_id }
 

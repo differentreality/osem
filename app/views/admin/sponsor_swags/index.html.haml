@@ -1,0 +1,30 @@
+.row
+  .col-md-12
+    .page-header
+      %h1
+        Swag for #{@sponsor.name}
+        = link_to 'Add Swag', new_admin_conference_sponsor_sponsor_swag_path(@conference, @sponsor), class: 'btn btn-warning pull-right'
+.row
+  .col-md-12
+    %table.table.table-hover.table-striped#swag-table
+      %thead
+        %th Name
+        %th Quantity
+        %th Shipments
+        %th Delivered
+        %th Available at venue
+        %th Notes
+        %th Actions
+      %tbody
+        - @sponsor.sponsor_swags.each do |swag|
+          %tr
+            %td= swag.name
+            %td= swag.quantity
+            %td
+              - swag.sponsor_shipments.each do |shipment|
+                = shipment.track_no
+            %td
+            %td
+            %td
+            %td
+            %td

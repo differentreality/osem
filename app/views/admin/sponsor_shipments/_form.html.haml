@@ -1,0 +1,20 @@
+.row
+  .col-md-12
+    .page-header
+      - if @sponsor_shipment.new_record?
+        %h1 Add new shipment for sponsor #{@sponsor.name}
+      - else
+        %h1 Edit shipment for sponsor #{@sponsor.name}
+
+.row
+  .col-md-8
+    = semantic_form_for @sponsor_shipment, url: @url do |f|
+      = f.input :sponsor_swags, input_html: { autofocus: true }
+      = f.input :carrier
+      = f.input :track_no
+      = f.input :boxes
+      = f.input :delivered
+      = f.input :available
+      = f.input :dispatched_at, as: :string, input_html: { class: 'datetimepicker', readonly: true, value: (f.object.dispatched_at.to_formatted_s(:db_without_seconds) unless f.object.dispatched_at.nil?) }
+
+      = f.submit 'Save', class: 'btn btn-primary'
