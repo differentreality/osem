@@ -28,9 +28,6 @@ module Admin
     end
 
     def update
-      sponsor_params[:shipments].reject!{ |shipment| shipment['carrier'].blank? } if sponsor_params[:shipments]
-      Rails.logger.debug "sponsor_params: #{sponsor_params}"
-      # if @sponsor.update_attributes(sponsor_params.map{ |k, v| if k == :shipments then [k,v.reject{|shipment| shipment['carrier'].blank?}]; else Hash[*[k,v]]; end })
       if @sponsor.update_attributes(sponsor_params)
         respond_to do |format|
           format.html {
@@ -57,22 +54,6 @@ module Admin
       end
     end
 
-    def add_swag_fields
-      respond_to do |format|
-        format.js
-      end
-    end
-
-    def add_shipment
-
-    end
-
-    def add_shipment_fields
-      respond_to do |format|
-        format.js
-      end
-    end
-
     def confirm
       @sponsor.confirm!
 
@@ -81,6 +62,7 @@ module Admin
                       notice: 'Sponsor successfully confirmed!'
       else
         flash[:error] = 'Sponsor couldn\' t be confirmed.'
+        redirect_to admin_conference_sponsors_path(@conference.short_title)
       end
     end
 
@@ -92,9 +74,33 @@ module Admin
                       notice: 'Sponsor successfully canceled'
       else
         flash[:error] = 'Sponsor couldn\'t be canceled'
+        redirect_to admin_conference_sponsors_path(@conference.short_title)
       end
     end
 
+    def contacted
+      @sponsor.contacted!
+
+      if @sponsor.save
+        redirect_to admin_conference_sponsors_path(@conference.short_title),
+                      notice: 'Sponsor successfully contacted'
+      else
+        flash[:error] = "Sponsor stated couldn't be updated to 'contacted'"
+        redirect_to admin_conference_sponsors_path(@conference.short_title)
+      end
+    end
+
+    def unconfirmed
+      @sponsor.unconfirmed!
+
+      if @sponsor.save
+        redirect_to admin_conference_sponsors_path(@conference.short_title),
+                      notice: 'Sponsor state successfully changed to unconfirmed.'
+      else
+        flash[:error] = "Sponsor stated couldn't be updated to 'unconfirmed'"
+        redirect_to admin_conference_sponsors_path(@conference.short_title)
+      end
+    end
 
     def remove_field
       respond_to do |format|
@@ -110,11 +116,8 @@ module Admin
                                       :sponsorship_level_id,
                                       :conference_id,
                                       :has_swag, :has_banner,
-                                      swag: [:type, :quantity, :delivered, :available],
-                                      shipments: [:carrier,
-                                                  :track_no,
-                                                  :boxes,
-                                                  :swag] )
+                                      sponsor_swags_attributes: [:name, :quantity, :id, :_destroy],
+                                      sponsor_shipments_attributes: [:carrier, :track_no, :boxes, :id, :_destroy, sponsor_swag_ids: []] )
     end
 
     def shipment_params

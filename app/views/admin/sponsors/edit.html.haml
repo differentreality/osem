@@ -6,22 +6,42 @@
           New
         Sponsor
         = @sponsor.name
-.row
-  .col-md-8
-    = semantic_form_for(@sponsor, url: (@sponsor.new_record? ? admin_conference_sponsors_path : admin_conference_sponsor_path(@conference.short_title, @sponsor))) do |f|
+= semantic_form_for(@sponsor, url: (@sponsor.new_record? ? admin_conference_sponsors_path : admin_conference_sponsor_path(@conference.short_title, @sponsor))) do |f|
+  .row
+    .col-md-8
       = f.input :name, input_html: { autofocus: true }
       = f.input :description, input_html: { rows: 3 }
       = image_tag f.object.picture.thumb.url if f.object.picture?
       = f.input :picture
       = f.input :website_url
       = f.input :sponsorship_level, collection: @conference.sponsorship_levels
-      = f.inputs 'Swag info' do
-        #swag
-          - if @sponsor.swag.any?
-            - @sponsor.swag.each do |swag|
-              = render partial: 'swag_fields', locals: { swag: swag }
-          - else
-            = render partial: 'swag_fields', locals: { swag: nil }
-      = link_to 'add', add_swag_fields_admin_conference_sponsor_path(@conference, @sponsor), remote: true
-      %p.text-right
+  .row
+    .col-md-8
+      #swag
+        = f.inputs 'Swag Info' do
+          .row
+            .col-md-5
+              = label_tag 'Name'
+            .col-md-5
+              = label_tag 'Quantity'
+            .col-md-2
+          = dynamic_association :sponsor_swags, '', f, alt_association_name: 'swag'
+  .row
+    .col-md-12
+      #shipments
+        = f.inputs 'Shipment Info' do
+          .row
+            .col-md-2
+              = label_tag 'Carrier'
+            .col-md-2
+              = label_tag 'Tracking No'
+            .col-md-1
+              = label_tag 'Boxes'
+            .col-md-3
+              = label_tag 'Related Swag'
+            .col-md-2
+              = label_tag 'Dispatched At'
+
+          = dynamic_association :sponsor_shipments, '', f, alt_association_name: 'shipment'
+      %p
         = f.action :submit, as: :button, button_html: { class: 'btn btn-primary' }

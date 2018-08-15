@@ -39,6 +39,13 @@ module Admin
     end
 
     def update
+      if @sponsor_shipment.update_attributes(sponsor_shipment_params)
+        flash[:notice] = 'Successfully updated shipment information.'
+      else
+        flash[:error] = 'Could not update shipment information.'
+      end
+
+      redirect_to admin_conference_sponsors_path(@conference)
     end
 
     def destroy
@@ -51,7 +58,10 @@ module Admin
     end
 
     def sponsor_shipment_params
-      params.require(:sponsor_shipment).permit(:carrier, :track_no, :boxes, :delivered, :available, :dispatched_at, sponsor_swag_ids: [])
+      params.require(:sponsor_shipment).permit(:carrier, :track_no, :boxes,
+                                               :delivered, :available,
+                                               :dispatched_at,
+                                               sponsor_swag_ids: [])
     end
   end
 end

@@ -50,11 +50,11 @@ module ApplicationHelper
   end
 
   def remove_association_link(association_name, form_builder)
-    link_to_remove_association('Remove ' + association_name.to_s.singularize, form_builder, class: 'assoc btn btn-danger') + tag(:hr)
+    link_to_remove_association('Remove ' + association_name.to_s.singularize, form_builder, class: 'assoc btn btn-danger')
   end
 
   def dynamic_association(association_name, title, form_builder, options = {})
-    render 'shared/dynamic_association', association_name: association_name, title: title, f: form_builder, hint: options[:hint]
+    render 'shared/dynamic_association', association_name: association_name, title: title, f: form_builder, hint: options[:hint], alt_association_name: options[:alt_association_name]
   end
 
   def tracks(conference)

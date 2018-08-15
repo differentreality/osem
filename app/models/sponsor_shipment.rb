@@ -7,6 +7,7 @@ class SponsorShipment < ApplicationRecord
   has_paper_trail ignore: [:updated_at], meta: { conference_id: :conference_id }
 
   validates :carrier, :boxes, presence: true
+  validates :track_no, uniqueness: true
   validates :boxes, numericality: { greater_than_or_equal_to: 0 }
 
   private

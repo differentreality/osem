@@ -8,6 +8,9 @@ class Sponsor < ApplicationRecord
   has_many :sponsor_swags
   has_many :sponsor_shipments
 
+  accepts_nested_attributes_for :sponsor_swags, allow_destroy: true
+  accepts_nested_attributes_for :sponsor_shipments, allow_destroy: true
+
   # serialize :swag, Array
   # serialize :shipments, Array
   # # serialize :swag, HashWithIndifferentAccess
@@ -19,20 +22,38 @@ class Sponsor < ApplicationRecord
   validates :name, :website_url, presence: true
 
   scope :confirmed, -> { where(state: 'confirmed') }
-  scope :unconfirmed, -> { where(state: 'unconfirmed') }
-  scope :with_swag, -> { where(has_swag: 1) }
-  scope :with_shipment, -> { where.not(shipments: nil) }
+  scope :unconfirmed, -> { where('state = ? OR state = ? OR state = ?', 'unconfirmed', 'contacted', 'not_started') }
+  scope :contacted, -> { where(state: 'contacted') }
+  scope :to_contact, -> { where(state: 'not_started') }
 
-  state_machine initial: :unconfirmed do
+  def self.with_shipment
+    select{|sponsor| sponsor.sponsor_shipments.any?}
+  end
+
+  def self.with_swag
+    select{ |sponsor| sponsor.sponsor_swags.any? }
+  end
+
+  state_machine initial: :not_started do
+   state :not_started
+   state :contacted
    state :unconfirmed
    state :confirmed
 
+   event :contacted do
+     transitions to: :contacted, from: [:not_started]
+   end
+
+   event :unconfirmed do
+     transitions to: :unconfirmed, from: [:contacted, :confirmed, :not_started]
+   end
+
    event :confirm do
-     transitions to: :confirmed, from: [:unconfirmed]
+     transitions to: :confirmed, from: [:unconfirmed, :contacted, :not_started]
    end
 
    event :cancel do
-     transitions to: :unconfirmed, from: [:confirmed]
+     transitions to: :not_started, from: [:confirmed, :unconfirmed, :contacted]
    end
   end
 

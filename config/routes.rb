@@ -125,6 +125,8 @@ Osem::Application.routes.draw do
       resources :tickets
       resources :sponsors do
         member do
+          patch :contacted
+          patch :unconfirmed
           patch :confirm
           patch :cancel
         end

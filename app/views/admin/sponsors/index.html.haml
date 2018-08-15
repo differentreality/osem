@@ -17,7 +17,7 @@
         %li
           %a{'data-toggle' => 'tab', href: '#contacts', role: 'tab'} Potential Sponsors
         %li
-          %a{'data-toggle' => 'tab', href: '#shipments', role: 'tab'} Shipments
+          %a{'data-toggle' => 'tab', href: '#shipments', role: 'tab'} Swag & Shipments
       .tab-content
         #sponsorships.tab-pane.active
           = render partial: 'confirmed'
@@ -28,3 +28,8 @@
 .row
   .col-md-12
     = link_to 'Add Sponsor', new_admin_conference_sponsor_path(@conference.short_title), class: 'btn btn-primary pull-right'
+
+:javascript
+  $('.dropdown-menu li').click(function(e) {
+    e.stopPropagation();
+  })
