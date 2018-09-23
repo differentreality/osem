@@ -126,6 +126,18 @@ class Mailbot < ActionMailer::Base
          body: conference.email_settings.generate_booth_mail(booth, conference.email_settings.booths_rejection_body))
   end
 
+  def sponsor_email(sponsor, conference, from, subject, body)
+    cc = ENV['SPONSORS_EMAIL_CC']
+    from = from || conference.contact.sponsor_email
+    to = sponsor.email
+    @email_body = body
+
+    mail(to: to,
+         from: from,
+         cc: cc,
+         subject: subject)
+  end
+
   def event_comment_mail(comment, user)
     @comment = comment
     @event = @comment.commentable

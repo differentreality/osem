@@ -54,6 +54,22 @@ module Admin
       end
     end
 
+    def prepare_email
+      @sponsor_email = SponsorEmail.new(from: ENV['SPONSORS_EMAIL_FROM'], to: @sponsor.email)
+    end
+
+    def email
+      # Send email to sponsor
+      begin
+        SponsorEmailJob.perform_later(@sponsor, @conference, params[:sponsor_email][:from], params[:sponsor_email][:subject], params[:sponsor_email][:body])
+        flash[:notice] = "Email sent to #{@sponsor.name}(#{@sponsor.email})"
+      rescue => error
+        flash[:error] = 'Email failed' + e.message
+      end
+
+      redirect_to admin_conference_sponsors_path(@conference)
+    end
+
     def confirm
       @sponsor.confirm!
 
@@ -115,7 +131,7 @@ module Admin
                                       :picture, :picture_cache,
                                       :sponsorship_level_id,
                                       :conference_id,
-                                      :has_swag, :has_banner,
+                                      :has_swag, :has_banner, :email,
                                       sponsor_swags_attributes: [:name, :quantity, :id, :_destroy],
                                       sponsor_shipments_attributes: [:carrier, :track_no, :boxes, :id, :_destroy, sponsor_swag_ids: []] )
     end

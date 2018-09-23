@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180822125509) do
+ActiveRecord::Schema.define(version: 20180923171309) do
 
   create_table "ahoy_events", force: :cascade do |t|
     t.integer  "visit_id"
@@ -503,6 +503,8 @@ ActiveRecord::Schema.define(version: 20180822125509) do
     t.date     "invoice_sent_at"
     t.string   "state",                default: "unconfirmed"
     t.text     "notes"
+    t.text     "short_description"
+    t.string   "email"
   end
 
   create_table "sponsorship_levels", force: :cascade do |t|

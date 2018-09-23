@@ -129,6 +129,8 @@ Osem::Application.routes.draw do
           patch :unconfirmed
           patch :confirm
           patch :cancel
+          get :prepare_email
+          post :email
         end
         resources :sponsor_swags
         resources :sponsor_shipments
