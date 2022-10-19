@@ -27,7 +27,7 @@
     = f.label :responsible_ids, 'Responsibles'
     = f.select :responsible_ids, @booth.responsibles.pluck(:username, :id), {}, { multiple: true, class: 'form-control', id: 'users_selectize', placeholder: 'Responsibles' }
     %span.help-block
-      The people responsible for the `t('booth')`. You can only select existing users.
+      The people responsible for the #{t('booth')}. You can only select existing users.
   .form-group
     = image_tag f.object.picture.thumb.url if f.object.picture?
     = f.label :picture, 'Picture'
@@ -35,9 +35,9 @@
   %p.text-right
     %button{type: 'submit', class: 'btn btn-success'}
       - if @booth.new_record?
-        Create `(t'booth').capitalize` Request
+        Create #{(t'booth').capitalize} Request
       - else
-        Update `(t'booth').capitalize` Request
+        Update #{(t'booth').capitalize} Request
 
 = render partial: 'shared/user_selectize'
 
